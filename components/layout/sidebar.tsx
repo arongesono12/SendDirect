@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   LayoutDashboard,
   Send,
@@ -16,7 +16,8 @@ import {
   Menu,
   X,
   TrendingUp,
-  LogOut
+  LogOut,
+  UserCog
 } from 'lucide-react';
 import { signOutAction } from '@/app/actions/auth';
 import { getInitials } from '@/lib/utils';
@@ -28,6 +29,7 @@ const adminRoutes = [
   { href: '/balance', label: 'Saldos', icon: Wallet },
   { href: '/stats', label: 'Estadísticas', icon: BarChart3 },
   { href: '/history', label: 'Historial', icon: History },
+  { href: '/profile', label: 'Perfil', icon: UserCog },
 ];
 
 const agentRoutes = [
@@ -35,6 +37,7 @@ const agentRoutes = [
   { href: '/transfers', label: 'Nueva transferencia', icon: Send },
   { href: '/history', label: 'Mis transferencias', icon: History },
   { href: '/balance', label: 'Mi saldo', icon: Wallet },
+  { href: '/profile', label: 'Mi perfil', icon: UserCog },
 ];
 
 const clientRoutes = [
@@ -42,6 +45,7 @@ const clientRoutes = [
   { href: '/transfers', label: 'Enviar dinero', icon: Send },
   { href: '/history', label: 'Mis transferencias', icon: History },
   { href: '/balance', label: 'Mi saldo', icon: Wallet },
+  { href: '/profile', label: 'Mi perfil', icon: UserCog },
 ];
 
 interface SidebarProps {
@@ -125,7 +129,8 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
         </Button>
         
         <div className={cn("flex items-center gap-3 p-2 rounded-3xl bg-primary/5", isCollapsed && "justify-center bg-transparent")}>
-          <Avatar className="h-10 w-10 border-2 border-primary/20">
+          <Avatar className="h-10 w-10 border-2 border-primary/20 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => router.push('/profile')}>
+            <AvatarImage src={user?.avatar_url} />
             <AvatarFallback className="bg-brand-gradient text-white font-bold">
               {user ? getInitials(user.name) : 'U'}
             </AvatarFallback>

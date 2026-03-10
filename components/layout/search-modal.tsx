@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent, 
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Search, MapPin, User, ArrowRight, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -46,7 +47,9 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-card/95 glass-premium border-border/20 rounded-[2.5rem] p-0 overflow-hidden outline-none top-[15%] translate-y-0">
+      <DialogContent className="max-w-2xl bg-card/95 glass-premium border-border/20 rounded-[2.5rem] p-0 overflow-hidden outline-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
+        <DialogTitle className="sr-only">Buscador Global</DialogTitle>
+
         <div className="p-6 border-b border-border/10 relative">
           <Search className="absolute left-10 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input 

@@ -54,14 +54,14 @@ export default function RegisterPage() {
 
   return (
     <>
-      <Card className="backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-700/50 shadow-xl hover:shadow-pink-500/10 dark:hover:shadow-pink-500/5 transition-all duration-300 rounded-2xl">
+      <Card className="backdrop-blur-xl bg-card/80 border-border/50 shadow-xl hover:shadow-primary/10 transition-all duration-300 rounded-3xl overflow-hidden ring-1 ring-border/5">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-3 rounded-2xl bg-linear-to-br from-pink-500 to-rose-600 text-white shadow-lg">
               <TrendingUp className="h-8 w-8" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight bg-linear-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent dark:from-pink-400 dark:to-rose-400">
+          <CardTitle className="text-3xl font-black tracking-tighter bg-brand-gradient bg-clip-text text-transparent">
             Crear cuenta
           </CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -81,7 +81,7 @@ export default function RegisterPage() {
                 <Input
                   id="name"
                   placeholder="Juan Pérez"
-                  className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
+                  className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
@@ -93,7 +93,7 @@ export default function RegisterPage() {
                   id="email"
                   type="email"
                   placeholder="correo@ejemplo.com"
-                  className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
+                  className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
@@ -107,7 +107,7 @@ export default function RegisterPage() {
                   id="phone"
                   type="tel"
                   placeholder="+34 600 000 000"
-                  className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
+                  className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   required
@@ -120,7 +120,7 @@ export default function RegisterPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 pr-10 rounded-xl text-foreground placeholder:text-muted-foreground"
+                    className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 pr-10 rounded-xl text-foreground placeholder:text-muted-foreground"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
@@ -141,7 +141,7 @@ export default function RegisterPage() {
                 value={formData.role} 
                 onValueChange={(value: UserRole) => setFormData({ ...formData, role: value })}
               >
-                <SelectTrigger className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent h-11 px-4 rounded-xl text-foreground">
+                <SelectTrigger className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent h-11 px-4 rounded-xl text-foreground">
                   <SelectValue placeholder="Selecciona tipo" />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                   value={formData.document_type} 
                   onValueChange={(value) => setFormData({ ...formData, document_type: value })}
                 >
-                  <SelectTrigger className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent h-11 px-4 rounded-xl text-foreground">
+                  <SelectTrigger className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent h-11 px-4 rounded-xl text-foreground">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -172,7 +172,7 @@ export default function RegisterPage() {
                 <Input
                   id="document_number"
                   placeholder="12345678A"
-                  className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
+                  className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.document_number}
                   onChange={(e) => setFormData({ ...formData, document_number: e.target.value })}
                 />
@@ -184,7 +184,7 @@ export default function RegisterPage() {
                 <Input
                   id="country"
                   placeholder="España"
-                  className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
+                  className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                 />
@@ -194,7 +194,7 @@ export default function RegisterPage() {
                 <Input
                   id="city"
                   placeholder="Madrid"
-                  className="bg-card border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
+                  className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                 />
@@ -202,7 +202,7 @@ export default function RegisterPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-6 pt-2">
-            <Button type="submit" className="w-full h-11 rounded-xl text-base font-semibold bg-linear-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white shadow-lg hover:shadow-pink-500/25 transition-all" disabled={loading}>
+            <Button type="submit" className="w-full h-12 rounded-2xl text-base font-black uppercase tracking-widest bg-brand-gradient hover:opacity-90 text-white shadow-lg hover:shadow-primary/25 transition-all duration-300" disabled={loading}>
               {loading ? 'Creando cuenta...' : 'Crear cuenta'}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
@@ -216,7 +216,7 @@ export default function RegisterPage() {
       </Card>
 
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="sm:max-w-md bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 text-center py-10 rounded-2xl">
+        <DialogContent className="sm:max-w-md bg-card/95 glass-premium border-border/20 text-center py-10 rounded-3xl outline-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
           <DialogHeader className="flex flex-col items-center space-y-4">
             <div className="p-4 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 animate-in zoom-in duration-500">
               <CheckCircle2 className="h-16 w-16" />

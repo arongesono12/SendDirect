@@ -10,6 +10,7 @@ export interface User {
   document_number?: string;
   country?: string;
   city?: string;
+  avatar_url?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;

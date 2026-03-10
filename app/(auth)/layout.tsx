@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function AuthLayout({
   children,
@@ -14,7 +15,12 @@ export default async function AuthLayout({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-background transition-colors duration-500">
+      {/* Theme Toggle Positioned Top Right */}
+      <div className="absolute top-8 right-8 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Background decoration */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pink-300/30 dark:bg-pink-700/20 rounded-full blur-3xl pointer-events-none" />

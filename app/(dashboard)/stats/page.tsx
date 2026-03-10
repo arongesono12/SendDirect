@@ -89,7 +89,7 @@ export default function StatsPage() {
           { label: 'Gestores Activos', value: agentStats.length, icon: Users, color: 'bg-primary', bg: 'bg-white/40' },
           { label: 'Ticket Promedio', value: totalTransfers > 0 ? formatCurrency(totalAmount / totalTransfers) : formatCurrency(0), icon: TrendingUp, color: 'bg-task-coral-fg', bg: 'bg-task-coral-bg' }
         ].map((item, i) => (
-          <Card key={i} className={`glass-premium border-border/10 ${item.bg}/20`}>
+          <Card key={i} className={`glass-premium relative border-border/10 ${item.bg}/20`}>
             <CardContent className="p-6 flex items-center gap-4">
               <div className={`p-3 rounded-2xl ${item.color} text-white shadow-lg shadow-black/5`}>
                 <item.icon className="h-5 w-5" />
@@ -209,7 +209,7 @@ export default function StatsPage() {
 
       {/* Top Ranking & Recent Activity */}
       <div className="grid gap-8 lg:grid-cols-3">
-        <Card className="lg:col-span-1 glass-premium">
+        <Card className="lg:col-span-1 glass-premium relative">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-primary">Top Gestores</CardTitle>
           </CardHeader>
@@ -235,7 +235,7 @@ export default function StatsPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 glass-premium">
+        <Card className="lg:col-span-2 glass-premium relative">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-primary">Operaciones Recientes</CardTitle>
           </CardHeader>

@@ -130,7 +130,7 @@ export default function TransfersPage() {
   if (success) {
     return (
       <div className="max-w-md mx-auto py-12 animate-in fade-in duration-700">
-        <Card className="glass-premium p-10 text-center">
+        <Card className="glass-premium relative p-10 text-center">
           <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-10 w-10 text-green-600" />
           </div>
@@ -163,7 +163,7 @@ export default function TransfersPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <Card className="glass-premium">
+        <Card className="glass-premium relative">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-foreground text-xl font-bold">
               <div className="p-2 rounded-xl bg-primary text-white shadow-lg bg-brand-gradient">
@@ -265,7 +265,7 @@ export default function TransfersPage() {
         </Card>
 
         <div className="space-y-8 flex flex-col">
-            <Card className="glass-premium p-8">
+            <Card className="glass-premium relative p-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                   <AlertCircle className="h-5 w-5" />

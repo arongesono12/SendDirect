@@ -35,14 +35,14 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-700/50 shadow-xl hover:shadow-pink-500/10 dark:hover:shadow-pink-500/5 transition-all duration-300 rounded-2xl">
+    <Card className="backdrop-blur-xl bg-card/80 border-border/50 shadow-xl hover:shadow-primary/10 transition-all duration-300 rounded-3xl overflow-hidden ring-1 ring-border/5">
       <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-2">
           <div className="p-3 rounded-2xl bg-linear-to-br from-pink-500 to-rose-600 text-white shadow-lg">
             <TrendingUp className="h-8 w-8" />
           </div>
         </div>
-        <CardTitle className="text-3xl font-bold tracking-tight bg-linear-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent dark:from-pink-400 dark:to-rose-400">
+        <CardTitle className="text-3xl font-black tracking-tighter bg-brand-gradient bg-clip-text text-transparent">
           SendDirect
         </CardTitle>
         <CardDescription className="text-muted-foreground">
@@ -62,7 +62,7 @@ export default function LoginPage() {
               id="email"
               type="email"
               placeholder="correo@ejemplo.com"
-              className="bg-card border border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
+              className="border border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -75,7 +75,7 @@ export default function LoginPage() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="bg-card border border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all h-11 px-4 pr-10 rounded-xl text-foreground placeholder:text-muted-foreground"
+                className="border border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all h-11 px-4 pr-10 rounded-xl text-foreground placeholder:text-muted-foreground"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -97,7 +97,7 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col space-y-6 pt-2">
           <Button 
             type="submit" 
-            className="w-full h-11 rounded-xl text-base font-semibold bg-linear-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white shadow-lg hover:shadow-pink-500/25 transition-all" 
+            className="w-full h-12 rounded-2xl text-base font-black uppercase tracking-widest bg-brand-gradient hover:opacity-90 text-white shadow-lg hover:shadow-primary/25 transition-all duration-300" 
             disabled={loading}
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}

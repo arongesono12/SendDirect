@@ -95,7 +95,7 @@ export default function HistoryPage() {
         </Button>
       </div>
 
-      <Card className="glass-premium overflow-hidden border-border/10">
+      <Card className="glass-premium relative overflow-hidden border-border/10">
         <CardHeader className="border-b border-border/5 pb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">

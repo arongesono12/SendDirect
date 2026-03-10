@@ -91,7 +91,7 @@ export default function BalancePage() {
           <p className="text-muted-foreground font-bold text-sm">Control integral de saldos y disponibilidad de la red de gestores.</p>
         </div>
 
-        <Card className="glass-premium">
+        <Card className="glass-premium relative">
           <CardHeader className="border-b border-border/5 pb-6">
             <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
                <Wallet className="h-5 w-5" /> Disponibilidad por Gestor
@@ -150,7 +150,7 @@ export default function BalancePage() {
           { label: 'Total Recargado', value: formatCurrency(transactions.filter(t => t.type === 'topup').reduce((s, t) => s + t.amount, 0)), icon: TrendingUp, color: 'bg-task-blue-fg', bg: 'bg-task-blue-bg' },
           { label: 'Total Operado', value: formatCurrency(Math.abs(transactions.filter(t => t.type === 'transfer').reduce((s, t) => s + t.amount, 0))), icon: ArrowUpDown, color: 'bg-task-purple-fg', bg: 'bg-task-purple-bg' }
         ].map((item, i) => (
-          <Card key={i} className={`glass-premium ${item.bg}/40`}>
+          <Card key={i} className={`glass-premium relative ${item.bg}/40`}>
             <CardContent className="p-6 space-y-4">
               <div className={`p-2.5 w-fit rounded-xl ${item.color} text-white shadow-lg shadow-black/5`}>
                 <item.icon className="h-5 w-5" />
@@ -165,7 +165,7 @@ export default function BalancePage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        <Card className="lg:col-span-1 glass-premium">
+        <Card className="lg:col-span-1 glass-premium relative">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
               <CreditCard className="h-5 w-5" /> Recargar Saldo
@@ -208,7 +208,7 @@ export default function BalancePage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 glass-premium">
+        <Card className="lg:col-span-2 glass-premium relative">
           <CardHeader className="border-b border-border/5 pb-6">
             <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
               <History className="h-5 w-5" /> Movimientos de Cuenta
@@ -263,7 +263,7 @@ export default function BalancePage() {
       </div>
 
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-md bg-card/90 glass-premium border-border/20 rounded-4xl p-10 outline-none">
+        <DialogContent className="max-w-md bg-card/90 glass-premium border-border/20 rounded-4xl p-10 outline-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
           <DialogHeader className="flex flex-col items-center">
              <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
                 <CheckCircle className="h-10 w-10 text-green-600" />

@@ -1,12 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, getInitials } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 import { ThemeToggle } from "@/components/theme-toggle";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Search, 
   Bell, 
@@ -16,13 +24,17 @@ import {
   Wallet, 
   History,
   TrendingUp,
+  UserCog,
+  LogOut,
 } from 'lucide-react';
+import { signOutAction } from '@/app/actions/auth';
 import { SearchModal } from './search-modal';
 import { NotificationModal } from './notification-modal';
 
 export function DashboardLayoutWrapper({ children }: { children: React.ReactNode }) {
-  const { user } = useAppStore();
+  const { user, setUser } = useAppStore();
   const pathname = usePathname();
+  const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -38,6 +50,12 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
     mainArea.addEventListener('scroll', handleScroll);
     return () => mainArea.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOutAction();
+    setUser(null);
+    router.push('/login');
+  };
   
   const navItems = user?.role === 'admin' 
     ? [
@@ -114,11 +132,36 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
                 <p className="text-sm font-black text-foreground leading-tight">{user?.name || 'Usuario'}</p>
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">{user?.email || 'invitado@mail.com'}</p>
               </div>
-              <Avatar className="h-10 w-10 border border-border/20 shadow-sm">
-                <AvatarFallback className="bg-muted text-foreground font-black text-xs">
-                  {getInitials(user?.name || 'U')}
-                </AvatarFallback>
-              </Avatar>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="h-10 w-10 border border-border/20 shadow-sm cursor-pointer transition-transform hover:scale-105 active:scale-95">
+                    <AvatarImage src={user?.avatar_url} />
+                    <AvatarFallback className="bg-brand-gradient text-white font-black text-xs">
+                      {getInitials(user?.name || 'U')}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-black leading-none">{user?.name}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => router.push('/profile')}>
+                    <UserCog className="mr-2 h-4 w-4" />
+                    <span>Mi Perfil</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-rose-500 focus:text-rose-500 focus:bg-rose-500/10">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Cerrar sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>

@@ -52,7 +52,7 @@ export function NotificationModal({ open, onOpenChange }: NotificationModalProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-card/95 glass-premium border-border/20 rounded-3xl p-0 overflow-hidden outline-none">
+      <DialogContent className="max-w-md bg-card/95 glass-premium border-border/20 rounded-3xl p-0 overflow-hidden outline-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
         <DialogHeader className="p-6 border-b border-border/10">
           <DialogTitle className="flex items-center gap-2 text-xl font-black text-foreground">
             <Bell className="h-5 w-5 text-primary" /> Notificaciones de Envío
