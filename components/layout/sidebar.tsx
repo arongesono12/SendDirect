@@ -1,0 +1,156 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { useAppStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  LayoutDashboard,
+  Send,
+  Users,
+  Wallet,
+  BarChart3,
+  History,
+  Menu,
+  X,
+  TrendingUp,
+  LogOut
+} from 'lucide-react';
+import { signOutAction } from '@/app/actions/auth';
+import { getInitials } from '@/lib/utils';
+
+const adminRoutes = [
+  { href: '/', label: 'Panel', icon: LayoutDashboard },
+  { href: '/transfers', label: 'Transferencias', icon: Send },
+  { href: '/agents', label: 'Gestores', icon: Users },
+  { href: '/balance', label: 'Saldos', icon: Wallet },
+  { href: '/stats', label: 'Estadísticas', icon: BarChart3 },
+  { href: '/history', label: 'Historial', icon: History },
+];
+
+const agentRoutes = [
+  { href: '/', label: 'Panel', icon: LayoutDashboard },
+  { href: '/transfers', label: 'Nueva transferencia', icon: Send },
+  { href: '/history', label: 'Mis transferencias', icon: History },
+  { href: '/balance', label: 'Mi saldo', icon: Wallet },
+];
+
+const clientRoutes = [
+  { href: '/', label: 'Panel', icon: LayoutDashboard },
+  { href: '/transfers', label: 'Enviar dinero', icon: Send },
+  { href: '/history', label: 'Mis transferencias', icon: History },
+  { href: '/balance', label: 'Mi saldo', icon: Wallet },
+];
+
+interface SidebarProps {
+  isCollapsed: boolean;
+  toggleCollapse: () => void;
+}
+
+export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, setUser } = useAppStore();
+  
+  const routes = user?.role === 'admin' 
+    ? adminRoutes 
+    : user?.role === 'gestor' 
+      ? agentRoutes 
+      : clientRoutes;
+
+  const handleSignOut = async () => {
+    await signOutAction();
+    setUser(null);
+    router.push('/login');
+  };
+
+  return (
+    <aside className={cn(
+      "fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300 glass-premium border-r-0 rounded-none",
+      isCollapsed ? "w-20" : "w-64"
+    )}>
+      <div className="flex h-20 items-center px-6 justify-between">
+        <Link href="/" className="flex items-center gap-2 font-bold text-2xl tracking-tight text-primary">
+          <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-sm">
+            <TrendingUp className="h-6 w-6" />
+          </div>
+          {!isCollapsed && <span className="text-brand-gradient">SendDirect</span>}
+        </Link>
+      </div>
+      
+      <nav className="flex-1 space-y-2 p-4 mt-4">
+        {routes.map((route) => {
+          const isActive = pathname === route.href;
+          const Icon = route.icon;
+          return (
+            <Link
+              key={route.href}
+              href={route.href}
+              className={cn(
+                "flex items-center rounded-2xl transition-all duration-300 group relative py-3.5",
+                isCollapsed ? "justify-center" : "px-4 gap-4",
+                isActive
+                  ? "bg-brand-gradient text-white shadow-xl shadow-pink-500/20"
+                  : "text-muted-foreground hover:bg-primary/5 hover:text-primary transition-colors"
+              )}
+            >
+              <Icon className={cn("h-5 w-5", isActive ? "text-white" : "text-muted-foreground group-hover:text-primary")} />
+              {!isCollapsed && <span className="font-semibold">{route.label}</span>}
+              {isActive && !isCollapsed && (
+                <div className="absolute right-4 h-1.5 w-1.5 rounded-full bg-white" />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-4 flex flex-col gap-4 mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleCollapse}
+          className={cn(
+            "text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-2xl",
+            isCollapsed ? "justify-center" : "justify-start gap-3 h-11 px-4"
+          )}
+        >
+          {isCollapsed ? <Menu className="h-5 w-5" /> : (
+            <>
+              <X className="h-5 w-5" />
+              <span className="font-medium">Colapsar</span>
+            </>
+          )}
+        </Button>
+        
+        <div className={cn("flex items-center gap-3 p-2 rounded-3xl bg-primary/5", isCollapsed && "justify-center bg-transparent")}>
+          <Avatar className="h-10 w-10 border-2 border-primary/20">
+            <AvatarFallback className="bg-brand-gradient text-white font-bold">
+              {user ? getInitials(user.name) : 'U'}
+            </AvatarFallback>
+          </Avatar>
+          {!isCollapsed && (
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-bold text-primary truncate">{user?.name}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-black">{user?.role}</p>
+            </div>
+          )}
+        </div>
+
+        <Button 
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "w-full transition-all text-muted-foreground hover:bg-red-500/10 hover:text-red-500 rounded-2xl",
+            isCollapsed ? "justify-center h-11 p-0" : "justify-start gap-3 px-4 h-11"
+          )}
+          onClick={handleSignOut}
+        >
+          <LogOut className="h-5 w-5" />
+          {!isCollapsed && <span className="font-semibold">Cerrar sesión</span>}
+        </Button>
+      </div>
+    </aside>
+  );
+}

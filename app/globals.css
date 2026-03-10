@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+/* Glassmorphism Theme (Default) */
+:root {
+  --background: hsl(220 33% 98%);
+  --foreground: hsl(224 71.4% 4.1%);
+  --card: hsl(0 0% 100% / 0.6);
+  --card-foreground: hsl(224 71.4% 4.1%);
+  --popover: hsl(0 0% 100% / 0.8);
+  --popover-foreground: hsl(224 71.4% 4.1%);
+  --primary: hsl(346 80% 55%); /* Brand Red/Pink */
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(220 14.3% 95.9%);
+  --secondary-foreground: hsl(220.9 39.3% 11%);
+  --muted: hsl(220 14.3% 95.9%);
+  --muted-foreground: hsl(220 8.9% 46.1%);
+  --accent: hsl(346 80% 55% / 0.1);
+  --accent-foreground: hsl(346 80% 55%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(210 20% 98%);
+  --border: hsl(220 13% 91% / 0.3);
+  --input: hsl(220 13% 91% / 0.3);
+  --ring: hsl(346 80% 55%);
+  --radius: 1.5rem;
+
+  /* Glass Effects */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-glow: rgba(255, 255, 255, 0.8);
+
+
+}
+
+.dark {
+  --background: hsl(224 71% 4%);
+  --foreground: hsl(210 20% 98%);
+  --card: hsl(224 71% 7% / 0.8);
+  --card-foreground: hsl(210 20% 98%);
+  --popover: hsl(224 71% 4% / 0.9);
+  --popover-foreground: hsl(210 20% 98%);
+  --primary: hsl(346 80% 55%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(222.2 47.4% 11.2%);
+  --secondary-foreground: hsl(210 20% 98%);
+  --muted: hsl(222.2 47.4% 11.2%);
+  --muted-foreground: hsl(215.4 16.3% 56.9%);
+  --accent: hsl(346 80% 55% / 0.2);
+  --accent-foreground: hsl(210 20% 98%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(210 20% 98%);
+  --border: hsl(217.2 32.6% 17.5% / 0.2);
+  --input: hsl(217.2 32.6% 17.5% / 0.2);
+  --ring: hsl(346 80% 55%);
+
+  /* Glass Dark Effects */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-glow: rgba(255, 255, 255, 0.05);
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-xl: var(--radius);
+  --radius-lg: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 8px);
+
+
+}
+
+@layer utilities {
+
+
+  .glass-premium {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--glass-glow),
+      transparent
+    );
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .glass-premium::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.8),
+      transparent,
+      rgba(255, 255, 255, 0.3)
+    );
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .bg-brand-gradient {
+    @apply bg-linear-to-br from-pink-500 to-rose-600;
+  }
+
+  .text-brand-gradient {
+    @apply bg-linear-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent;
+  }
+
+  .main-container {
+    @apply flex flex-col bg-transparent min-h-screen p-4 md:p-8;
+  }
+
+  .dashboard-card {
+    @apply bg-card rounded-[2.5rem] shadow-xl shadow-slate-200/20 dark:shadow-black/20 overflow-hidden border border-border/10 text-card-foreground;
+  }
+}
+
+* {
+  border-color: var(--border);
+  font-family: var(--font-poppins), system-ui, sans-serif !important;
+}
+
+body {
+  @apply bg-background text-foreground;
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
