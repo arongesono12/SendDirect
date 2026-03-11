@@ -4,41 +4,46 @@ import type { DashboardStats, DailyTransferStats, AgentTransferStats } from '@/t
 export async function getAgentDashboardStats(agentId: string): Promise<DashboardStats> {
   const adminClient = createAdminClient();
 
-  const { data: balance } = await adminClient
+  const { data: balances } = await adminClient
     .from('agent_balances')
-    .select('balance')
+    .select('balance, currency')
     .eq('agent_id', agentId)
-    .single();
-
+    ;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString();
-
   const { data: todayTransfers } = await adminClient
     .from('transfers')
     .select('id, amount')
     .eq('agent_id', agentId)
     .gte('created_at', todayStr)
     .eq('status', 'completed');
-
   const { data: allTransfers } = await adminClient
     .from('transfers')
     .select('id, amount')
     .eq('agent_id', agentId)
     .eq('status', 'completed');
-
   const { data: clients } = await adminClient
     .from('transfers')
     .select('sender_phone')
     .eq('agent_id', agentId);
 
-  const uniqueClients = new Set(clients?.map(c => c.sender_phone));
+  // Build currency-aware balances
+  const perCurrency: Record<string, number> = {};
+  balances?.forEach((b: any) => {
+    const cur = b?.currency || 'XAF';
+    perCurrency[cur] = (perCurrency[cur] ?? 0) + Number(b?.balance ?? 0);
+  });
+
+  const totalBalance = Object.values(perCurrency).reduce((a, b) => a + b, 0);
+  const uniqueClients = new Set((clients ?? []).map((c: any) => c.sender_phone));
 
   return {
-    totalBalance: balance?.balance || 0,
+    totalBalance,
     todayTransfers: todayTransfers?.length || 0,
     totalSent: allTransfers?.reduce((sum, t) => sum + Number(t.amount), 0) || 0,
     totalClients: uniqueClients.size,
+    balancesByCurrency: perCurrency,
   };
 }
 
@@ -47,7 +52,7 @@ export async function getAdminDashboardStats(): Promise<DashboardStats> {
 
   const { data: balances } = await adminClient
     .from('agent_balances')
-    .select('balance');
+    .select('balance, currency');
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -69,11 +74,21 @@ export async function getAdminDashboardStats(): Promise<DashboardStats> {
     .select('id')
     .eq('role', 'cliente');
 
+  // Currency-wise aggregation
+  const perCurrency: Record<string, number> = {};
+  balances?.forEach((b: any) => {
+    const cur = b?.currency || 'XAF';
+    perCurrency[cur] = (perCurrency[cur] ?? 0) + Number(b?.balance ?? 0);
+  });
+
+  const totalBalance = Object.values(perCurrency).reduce((a, b) => a + b, 0);
+
   return {
-    totalBalance: balances?.reduce((sum, b) => sum + Number(b.balance), 0) || 0,
+    totalBalance,
     todayTransfers: todayTransfers?.length || 0,
     totalSent: allTransfers?.reduce((sum, t) => sum + Number(t.amount), 0) || 0,
     totalClients: allUsers?.length || 0,
+    balancesByCurrency: perCurrency,
   };
 }
 

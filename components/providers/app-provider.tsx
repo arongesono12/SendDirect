@@ -10,7 +10,7 @@ interface AppProviderProps {
 }
 
 export function AppProvider({ children, initialUser }: AppProviderProps) {
-  const { setUser, setLoading, setTheme } = useAppStore();
+  const { setUser, setLoading, setTheme, setPreferredCurrency } = useAppStore();
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -23,9 +23,15 @@ export function AppProvider({ children, initialUser }: AppProviderProps) {
     } else {
       setTheme('dark');
     }
+    
+    const storedCurrency = localStorage.getItem('preferredCurrency');
+    if (storedCurrency) {
+      setPreferredCurrency(storedCurrency);
+    }
+    
     setUser(initialUser);
     setLoading(false);
-  }, [initialUser, setUser, setLoading, setTheme]);
+  }, [initialUser, setUser, setLoading, setTheme, setPreferredCurrency]);
 
   return <>{children}</>;
 }

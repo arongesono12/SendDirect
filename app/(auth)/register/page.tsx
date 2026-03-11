@@ -106,7 +106,7 @@ export default function RegisterPage() {
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+34 600 000 000"
+                  placeholder="+240 222 000 000 / 555 000 000"
                   className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}

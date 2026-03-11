@@ -5,16 +5,19 @@ interface AppState {
   user: User | null;
   isLoading: boolean;
   theme: 'light' | 'dark';
+  preferredCurrency: string;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
+  setPreferredCurrency: (currency: string) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
   user: null,
   isLoading: true,
   theme: 'dark',
+  preferredCurrency: 'XAF',
   setUser: (user) => set({ user }),
   setLoading: (isLoading) => set({ isLoading }),
   setTheme: (theme) => {
@@ -35,6 +38,16 @@ export const useAppStore = create<AppState>((set, get) => ({
       try {
         localStorage.setItem('theme', newTheme);
         document.body.setAttribute('data-theme', newTheme);
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+    }
+  },
+  setPreferredCurrency: (currency) => {
+    set({ preferredCurrency: currency });
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('preferredCurrency', currency);
       } catch (e) {
         // Ignore localStorage errors
       }

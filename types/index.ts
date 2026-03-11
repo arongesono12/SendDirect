@@ -167,6 +167,8 @@ export interface DashboardStats {
   todayTransfers: number;
   totalSent: number;
   totalClients: number;
+  // Totales agrupados por moneda (por ejemplo { USD: 1234.56, EUR: 789.00 })
+  balancesByCurrency?: Record<string, number>;
 }
 
 export interface ChartData {

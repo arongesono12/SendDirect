@@ -97,10 +97,10 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
                 isCollapsed ? "justify-center" : "px-4 gap-4",
                 isActive
                   ? "bg-brand-gradient text-white shadow-xl shadow-pink-500/20"
-                  : "text-muted-foreground hover:bg-primary/5 hover:text-primary transition-colors"
+                  : "text-muted-foreground hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 transition-colors"
               )}
             >
-              <Icon className={cn("h-5 w-5", isActive ? "text-white" : "text-muted-foreground group-hover:text-primary")} />
+              <Icon className={cn("h-5 w-5", isActive ? "text-white" : "text-muted-foreground group-hover:text-pink-600 dark:group-hover:text-pink-400")} />
               {!isCollapsed && <span className="font-semibold">{route.label}</span>}
               {isActive && !isCollapsed && (
                 <div className="absolute right-4 h-1.5 w-1.5 rounded-full bg-white" />
@@ -116,7 +116,7 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
           size="sm"
           onClick={toggleCollapse}
           className={cn(
-            "text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-2xl",
+            "text-muted-foreground hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 rounded-2xl",
             isCollapsed ? "justify-center" : "justify-start gap-3 h-11 px-4"
           )}
         >
@@ -136,7 +136,7 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
             </AvatarFallback>
           </Avatar>
           {!isCollapsed && (
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden hidden lg:block">
               <p className="text-sm font-bold text-primary truncate">{user?.name}</p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-black">{user?.role}</p>
             </div>
@@ -147,7 +147,7 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
           variant="ghost"
           size="sm"
           className={cn(
-            "w-full transition-all text-muted-foreground hover:bg-red-500/10 hover:text-red-500 rounded-2xl",
+            "w-full transition-all text-muted-foreground hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 rounded-2xl",
             isCollapsed ? "justify-center h-11 p-0" : "justify-start gap-3 px-4 h-11"
           )}
           onClick={handleSignOut}

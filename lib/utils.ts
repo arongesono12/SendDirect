@@ -5,6 +5,42 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const exchangeRates: Record<string, Record<string, number>> = {
+  XAF: {
+    XAF: 1,
+    EUR: 0.001524,
+    USD: 0.001671,
+    GBP: 0.001273,
+  },
+  EUR: {
+    XAF: 655.957,
+    EUR: 1,
+    USD: 1.0963,
+    GBP: 0.8352,
+  },
+  USD: {
+    XAF: 598.45,
+    USD: 1,
+    EUR: 0.9121,
+    GBP: 0.7620,
+  },
+  GBP: {
+    XAF: 785.23,
+    GBP: 1,
+    EUR: 1.1973,
+    USD: 1.3124,
+  },
+};
+
+export function convertCurrency(amount: number, fromCurrency: string, toCurrency: string): number {
+  if (fromCurrency === toCurrency) return amount;
+  
+  const rates = exchangeRates[fromCurrency];
+  if (!rates || !rates[toCurrency]) return amount;
+  
+  return amount * rates[toCurrency];
+}
+
 export function formatCurrency(amount: number, currency: string = 'XAF'): string {
   const currencySymbols: Record<string, string> = {
     'XAF': 'XAF',
