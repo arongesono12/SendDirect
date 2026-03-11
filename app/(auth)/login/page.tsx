@@ -35,81 +35,83 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="backdrop-blur-xl bg-card/80 border-border/50 shadow-xl hover:shadow-primary/10 transition-all duration-300 rounded-3xl overflow-hidden ring-1 ring-border/5">
-      <CardHeader className="space-y-2 text-center">
+    <div className="w-full">
+      <Card className="backdrop-blur-xl bg-card/80 border-border/50 shadow-xl hover:shadow-primary/10 transition-all duration-300 rounded-2xl md:rounded-3xl overflow-hidden ring-1 ring-border/5">
+        <CardHeader className="space-y-2 text-center pb-4 md:pb-2">
           <div className="flex justify-center mb-2">
-          <div className="p-3 rounded-2xl bg-linear-to-br from-pink-500 to-rose-600 text-white shadow-lg">
-            <TrendingUp className="h-8 w-8" />
-          </div>
-        </div>
-        <CardTitle className="text-3xl font-black tracking-tighter bg-brand-gradient bg-clip-text text-transparent">
-          SendDirect
-        </CardTitle>
-        <CardDescription className="text-muted-foreground">
-          Ingresa tus credenciales para acceder
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-5">
-          {error && (
-            <div className="p-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl">
-              {error}
+            <div className="p-3 rounded-2xl bg-linear-to-br from-pink-500 to-rose-600 text-white shadow-lg">
+              <TrendingUp className="h-8 w-8" />
             </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-muted-foreground">Correo electrónico</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="correo@ejemplo.com"
-              className="border border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-muted-foreground">Contraseña</Label>
-            <div className="relative">
+          <CardTitle className="text-2xl md:text-3xl font-black tracking-tighter bg-brand-gradient bg-clip-text text-transparent">
+            SendDirect
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-sm">
+            Ingresa tus credenciales
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4 md:space-y-5">
+            {error && (
+              <div className="p-3 md:p-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl">
+                {error}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-muted-foreground">Correo electrónico</Label>
               <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                className="border border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all h-11 px-4 pr-10 rounded-xl text-foreground placeholder:text-muted-foreground"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="correo@ejemplo.com"
+                className="border border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-pink-500 dark:hover:text-pink-400 transition-colors"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
-              </button>
             </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-6 pt-2">
-          <Button 
-            type="submit" 
-            className="w-full h-12 rounded-2xl text-base font-black uppercase tracking-widest bg-brand-gradient hover:opacity-90 text-white shadow-lg hover:shadow-primary/25 transition-all duration-300" 
-            disabled={loading}
-          >
-            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-          </Button>
-          <p className="text-sm text-center text-muted-foreground">
-            ¿No tienes cuenta?{' '}
-            <Link href="/register" className="font-medium bg-linear-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent hover:from-pink-600 hover:to-rose-700 dark:from-pink-400 dark:to-rose-400 transition-all">
-              Regístrate ahora
-            </Link>
-          </p>
-        </CardFooter>
-      </form>
-    </Card>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium text-muted-foreground">Contraseña</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="border border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all h-11 px-4 pr-10 rounded-xl text-foreground placeholder:text-muted-foreground"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-pink-500 dark:hover:text-pink-400 transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4 pt-2">
+            <Button 
+              type="submit" 
+              className="w-full h-12 rounded-2xl text-base font-black uppercase tracking-widest bg-brand-gradient hover:opacity-90 text-white shadow-lg hover:shadow-primary/25 transition-all duration-300" 
+              disabled={loading}
+            >
+              {loading ? 'Iniciando...' : 'Iniciar sesión'}
+            </Button>
+            <p className="text-sm text-center text-muted-foreground">
+              ¿No tienes cuenta?{' '}
+              <Link href="/register" className="font-medium bg-linear-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent hover:from-pink-600 hover:to-rose-700 dark:from-pink-400 dark:to-rose-400 transition-all">
+                Regístrate
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
 }
