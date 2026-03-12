@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PhoneInput } from '@/components/ui/phone-input';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -100,39 +101,35 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-muted-foreground">Teléfono</Label>
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-muted-foreground">Teléfono</Label>
+              <PhoneInput
+                value={formData.phone}
+                onChange={(value) => setFormData({ ...formData, phone: value })}
+                placeholder="Número de teléfono"
+                required
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-muted-foreground">Contraseña</Label>
+              <div className="relative">
                 <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+240 222 000 000 / 555 000 000"
-                  className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 pr-10 rounded-xl text-foreground placeholder:text-muted-foreground"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-muted-foreground">Contraseña</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 pr-10 rounded-xl text-foreground placeholder:text-muted-foreground"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-pink-500 dark:hover:text-pink-400 transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-pink-500 dark:hover:text-pink-400 transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
             <div className="space-y-2">
@@ -183,7 +180,7 @@ export default function RegisterPage() {
                 <Label htmlFor="country" className="text-muted-foreground">País</Label>
                 <Input
                   id="country"
-                  placeholder="España"
+                  placeholder="Su país"
                   className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
@@ -193,7 +190,7 @@ export default function RegisterPage() {
                 <Label htmlFor="city" className="text-muted-foreground">Ciudad</Label>
                 <Input
                   id="city"
-                  placeholder="Madrid"
+                  placeholder="Su ciudadd"
                   className="border-border focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-colors h-11 px-4 rounded-xl text-foreground placeholder:text-muted-foreground"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}

@@ -35,7 +35,7 @@ import { signOutAction } from '@/app/actions/auth';
 import { SearchModal } from './search-modal';
 import { NotificationModal } from './notification-modal';
 import { SettingsModal } from './settings-modal';
-import { getAgentNotifications } from '@/services/transfer';
+import { getAgentNotifications, getAdminNotifications } from '@/services/transfer';
 
 export function DashboardLayoutWrapper({ children }: { children: React.ReactNode }) {
   const { user, setUser, theme } = useAppStore();
@@ -66,7 +66,12 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
     async function loadNotificationCount() {
       if (!user?.id) return;
       try {
-        const notifications = await getAgentNotifications(user.id);
+        let notifications;
+        if (user.role === 'admin') {
+          notifications = await getAdminNotifications();
+        } else {
+          notifications = await getAgentNotifications(user.id);
+        }
         setNotificationCount(notifications.length);
       } catch (error) {
         console.error('Error loading notification count:', error);
@@ -75,7 +80,7 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
     loadNotificationCount();
     const interval = setInterval(loadNotificationCount, 30000);
     return () => clearInterval(interval);
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   const handleSignOut = async () => {
     await signOutAction();
@@ -197,7 +202,9 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
             <div className="flex items-center gap-3 pl-2 md:pl-6 border-l border-border/50">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-black text-foreground leading-tight">{user?.name || 'Usuario'}</p>
-                <p className="text-[10px] font-bold text-muted-foreground">{user?.email || 'invitado@mail.com'}</p>
+                <p className="text-[10px] font-bold text-muted-foreground capitalize">
+                  {user?.role === 'admin' ? 'Administrador' : user?.role === 'gestor' ? 'Gestor' : user?.role === 'cliente' ? 'Cliente' : user?.role || 'Usuario'}
+                </p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -212,8 +219,8 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-black leading-none">{user?.name}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground">
-                        {user?.email}
+                      <p className="text-[10px] font-bold text-muted-foreground capitalize">
+                        {user?.role === 'admin' ? 'Administrador' : user?.role === 'gestor' ? 'Gestor' : user?.role === 'cliente' ? 'Cliente' : user?.role || 'Usuario'}
                       </p>
                     </div>
                   </DropdownMenuLabel>

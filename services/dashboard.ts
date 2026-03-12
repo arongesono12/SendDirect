@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { DashboardStats, DailyTransferStats, AgentTransferStats } from '@/types';
+import { calculateCommission } from '@/lib/tariffs';
 
 export async function getAgentDashboardStats(agentId: string): Promise<DashboardStats> {
   const adminClient = createAdminClient();
@@ -38,12 +39,26 @@ export async function getAgentDashboardStats(agentId: string): Promise<Dashboard
   const totalBalance = Object.values(perCurrency).reduce((a, b) => a + b, 0);
   const uniqueClients = new Set((clients ?? []).map((c: any) => c.sender_phone));
 
+  const totalCommission = (allTransfers ?? []).reduce((sum, t) => {
+    return sum + calculateCommission(Number(t.amount));
+  }, 0);
+
+  const todayCommission = (todayTransfers ?? []).reduce((sum, t) => {
+    return sum + calculateCommission(Number(t.amount));
+  }, 0);
+
+  const completedCount = allTransfers?.length || 0;
+  const commissionPerTransfer = completedCount > 0 ? totalCommission / completedCount : 0;
+
   return {
     totalBalance,
     todayTransfers: todayTransfers?.length || 0,
     totalSent: allTransfers?.reduce((sum, t) => sum + Number(t.amount), 0) || 0,
     totalClients: uniqueClients.size,
     balancesByCurrency: perCurrency,
+    totalCommission,
+    todayCommission,
+    commissionPerTransfer,
   };
 }
 
@@ -69,6 +84,12 @@ export async function getAdminDashboardStats(): Promise<DashboardStats> {
     .select('amount')
     .eq('status', 'completed');
 
+  const { data: todayAllTransfers } = await adminClient
+    .from('transfers')
+    .select('amount')
+    .gte('created_at', todayStr)
+    .eq('status', 'completed');
+
   const { data: allUsers } = await adminClient
     .from('users')
     .select('id')
@@ -83,12 +104,26 @@ export async function getAdminDashboardStats(): Promise<DashboardStats> {
 
   const totalBalance = Object.values(perCurrency).reduce((a, b) => a + b, 0);
 
+  const totalCommission = (allTransfers ?? []).reduce((sum, t) => {
+    return sum + calculateCommission(Number(t.amount));
+  }, 0);
+
+  const todayCommission = (todayAllTransfers ?? []).reduce((sum, t) => {
+    return sum + calculateCommission(Number(t.amount));
+  }, 0);
+
+  const completedCount = allTransfers?.length || 0;
+  const commissionPerTransfer = completedCount > 0 ? totalCommission / completedCount : 0;
+
   return {
     totalBalance,
     todayTransfers: todayTransfers?.length || 0,
     totalSent: allTransfers?.reduce((sum, t) => sum + Number(t.amount), 0) || 0,
     totalClients: allUsers?.length || 0,
     balancesByCurrency: perCurrency,
+    totalCommission,
+    todayCommission,
+    commissionPerTransfer,
   };
 }
 
@@ -168,16 +203,78 @@ export async function getAgentTransferStats(): Promise<AgentTransferStats[]> {
   return Array.from(agentMap.values()).sort((a, b) => b.total_sent - a.total_sent);
 }
 
-export async function getRecentTransfers(limit: number = 10) {
+export async function getRecentTransfers(limit: number = 10, agentId?: string) {
   const adminClient = createAdminClient();
 
-  const { data, error } = await adminClient
+  let query = adminClient
     .from('transfers')
     .select('*, agent:users!transfers_agent_id_fkey(name)')
     .eq('status', 'completed')
-    .order('created_at', { ascending: false })
-    .limit(limit);
+    .order('created_at', { ascending: false });
+
+  if (agentId) {
+    query = query.eq('agent_id', agentId);
+  }
+
+  const { data, error } = await query.limit(limit);
 
   if (error) throw error;
   return data;
+}
+
+export async function getAgentsCommissionStats() {
+  const adminClient = createAdminClient();
+
+  const { data: transfers, error } = await adminClient
+    .from('transfers')
+    .select('agent_id, amount, created_at, users!transfers_agent_id_fkey(name)')
+    .eq('status', 'completed');
+
+  if (error) throw error;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString();
+
+  const agentMap = new Map<string, {
+    agent_id: string;
+    agent_name: string;
+    total_commission: number;
+    today_commission: number;
+    transfer_count: number;
+  }>();
+
+  transfers?.forEach((transfer) => {
+    const agentId = transfer.agent_id;
+    const commission = calculateCommission(Number(transfer.amount));
+    const isToday = new Date(transfer.created_at) >= new Date(todayStr);
+    const agentName = (transfer as unknown as { users?: { name: string } }).users?.name || 'Unknown';
+
+    const existing = agentMap.get(agentId);
+    if (existing) {
+      existing.total_commission += commission;
+      existing.transfer_count += 1;
+      if (isToday) {
+        existing.today_commission += commission;
+      }
+    } else {
+      agentMap.set(agentId, {
+        agent_id: agentId,
+        agent_name: agentName,
+        total_commission: commission,
+        today_commission: isToday ? commission : 0,
+        transfer_count: 1,
+      });
+    }
+  });
+
+  const agents = Array.from(agentMap.values());
+  const totalCommissionAll = agents.reduce((sum, a) => sum + a.total_commission, 0);
+  const todayCommissionAll = agents.reduce((sum, a) => sum + a.today_commission, 0);
+
+  return {
+    agents: agents.sort((a, b) => b.total_commission - a.total_commission),
+    totalCommission: totalCommissionAll,
+    todayCommission: todayCommissionAll,
+  };
 }

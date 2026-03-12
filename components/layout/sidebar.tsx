@@ -17,10 +17,13 @@ import {
   X,
   TrendingUp,
   LogOut,
-  UserCog
+  UserCog,
+  UsersRound,
 } from 'lucide-react';
 import { signOutAction } from '@/app/actions/auth';
 import { getInitials } from '@/lib/utils';
+import { useState } from 'react';
+import { UsersPanel } from './users-panel';
 
 const adminRoutes = [
   { href: '/', label: 'Panel', icon: LayoutDashboard },
@@ -57,6 +60,7 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, setUser } = useAppStore();
+  const [usersPanelOpen, setUsersPanelOpen] = useState(false);
   
   const routes = user?.role === 'admin' 
     ? adminRoutes 
@@ -71,91 +75,113 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
   };
 
   return (
-    <aside className={cn(
-      "fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300 glass-premium border-r-0 rounded-none",
-      isCollapsed ? "w-20" : "w-64"
-    )}>
-      <div className="flex h-20 items-center px-6 justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-2xl tracking-tight text-primary">
-          <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-sm">
-            <TrendingUp className="h-6 w-6" />
-          </div>
-          {!isCollapsed && <span className="text-brand-gradient">SendDirect</span>}
-        </Link>
-      </div>
-      
-      <nav className="flex-1 space-y-2 p-4 mt-4">
-        {routes.map((route) => {
-          const isActive = pathname === route.href;
-          const Icon = route.icon;
-          return (
-            <Link
-              key={route.href}
-              href={route.href}
+    <>
+      <aside className={cn(
+        "fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300 glass-premium border-r-0 rounded-none",
+        isCollapsed ? "w-20" : "w-64"
+      )}>
+        <div className="flex h-20 items-center px-6 justify-between">
+          <Link href="/" className="flex items-center gap-2 font-bold text-2xl tracking-tight text-primary">
+            <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-sm">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            {!isCollapsed && <span className="text-brand-gradient">SendDirect</span>}
+          </Link>
+        </div>
+        
+        <nav className="flex-1 space-y-2 p-4 mt-4">
+          {routes.map((route) => {
+            const isActive = pathname === route.href;
+            const Icon = route.icon;
+            return (
+              <Link
+                key={route.href}
+                href={route.href}
+                className={cn(
+                  "flex items-center rounded-2xl transition-all duration-300 group relative py-3.5",
+                  isCollapsed ? "justify-center" : "px-4 gap-4",
+                  isActive
+                    ? "bg-brand-gradient text-white shadow-xl shadow-pink-500/20"
+                    : "text-muted-foreground hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 transition-colors"
+                )}
+              >
+                <Icon className={cn("h-5 w-5", isActive ? "text-white" : "text-muted-foreground group-hover:text-pink-600 dark:group-hover:text-pink-400")} />
+                {!isCollapsed && <span className="font-semibold">{route.label}</span>}
+                {isActive && !isCollapsed && (
+                  <div className="absolute right-4 h-1.5 w-1.5 rounded-full bg-white" />
+                )}
+              </Link>
+            );
+          })}
+
+          {/* Admin-only: Users Panel Button */}
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => setUsersPanelOpen(true)}
               className={cn(
-                "flex items-center rounded-2xl transition-all duration-300 group relative py-3.5",
+                "w-full flex items-center rounded-2xl transition-all duration-300 group relative py-3.5",
                 isCollapsed ? "justify-center" : "px-4 gap-4",
-                isActive
-                  ? "bg-brand-gradient text-white shadow-xl shadow-pink-500/20"
-                  : "text-muted-foreground hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 transition-colors"
+                "text-muted-foreground hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 transition-colors"
               )}
             >
-              <Icon className={cn("h-5 w-5", isActive ? "text-white" : "text-muted-foreground group-hover:text-pink-600 dark:group-hover:text-pink-400")} />
-              {!isCollapsed && <span className="font-semibold">{route.label}</span>}
-              {isActive && !isCollapsed && (
-                <div className="absolute right-4 h-1.5 w-1.5 rounded-full bg-white" />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+              <UsersRound className="h-5 w-5 text-muted-foreground group-hover:text-pink-600 dark:group-hover:text-pink-400" />
+              {!isCollapsed && <span className="font-semibold">Usuarios</span>}
+            </button>
+          )}
+        </nav>
 
-      <div className="p-4 flex flex-col gap-4 mb-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleCollapse}
-          className={cn(
-            "text-muted-foreground hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 rounded-2xl",
-            isCollapsed ? "justify-center" : "justify-start gap-3 h-11 px-4"
-          )}
-        >
-          {isCollapsed ? <Menu className="h-5 w-5" /> : (
-            <>
-              <X className="h-5 w-5" />
-              <span className="font-medium">Colapsar</span>
-            </>
-          )}
-        </Button>
-        
-        <div className={cn("flex items-center gap-3 p-2 rounded-3xl bg-primary/5", isCollapsed && "justify-center bg-transparent")}>
-          <Avatar className="h-10 w-10 border-2 border-primary/20 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => router.push('/profile')}>
-            <AvatarImage src={user?.avatar_url} />
-            <AvatarFallback className="bg-brand-gradient text-white font-bold">
-              {user ? getInitials(user.name) : 'U'}
-            </AvatarFallback>
-          </Avatar>
-          {!isCollapsed && (
-            <div className="flex-1 overflow-hidden hidden lg:block">
-              <p className="text-sm font-bold text-primary truncate">{user?.name}</p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-black">{user?.role}</p>
-            </div>
-          )}
+        <div className="p-4 flex flex-col gap-4 mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleCollapse}
+            className={cn(
+              "text-muted-foreground hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 rounded-2xl",
+              isCollapsed ? "justify-center" : "justify-start gap-3 h-11 px-4"
+            )}
+          >
+            {isCollapsed ? <Menu className="h-5 w-5" /> : (
+              <>
+                <X className="h-5 w-5" />
+                <span className="font-medium">Colapsar</span>
+              </>
+            )}
+          </Button>
+          
+          <div className={cn("flex items-center gap-3 p-2 rounded-3xl bg-primary/5", isCollapsed && "justify-center bg-transparent")}>
+            <Avatar className="h-10 w-10 border-2 border-primary/20 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => router.push('/profile')}>
+              <AvatarImage src={user?.avatar_url} />
+              <AvatarFallback className="bg-brand-gradient text-white font-bold">
+                {user ? getInitials(user.name) : 'U'}
+              </AvatarFallback>
+            </Avatar>
+            {!isCollapsed && (
+              <div className="flex-1 overflow-hidden hidden lg:block">
+                <p className="text-sm font-bold text-primary truncate">{user?.name}</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-black">{user?.role}</p>
+              </div>
+            )}
+          </div>
+
+          <Button 
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "w-full transition-all text-muted-foreground hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 rounded-2xl",
+              isCollapsed ? "justify-center h-11 p-0" : "justify-start gap-3 px-4 h-11"
+            )}
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-5 w-5" />
+            {!isCollapsed && <span className="font-semibold">Cerrar sesión</span>}
+          </Button>
         </div>
+      </aside>
 
-        <Button 
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "w-full transition-all text-muted-foreground hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 rounded-2xl",
-            isCollapsed ? "justify-center h-11 p-0" : "justify-start gap-3 px-4 h-11"
-          )}
-          onClick={handleSignOut}
-        >
-          <LogOut className="h-5 w-5" />
-          {!isCollapsed && <span className="font-semibold">Cerrar sesión</span>}
-        </Button>
-      </div>
-    </aside>
+      {/* Feature 3: Admin Users Panel */}
+      {user?.role === 'admin' && (
+        <UsersPanel open={usersPanelOpen} onClose={() => setUsersPanelOpen(false)} />
+      )}
+    </>
   );
 }

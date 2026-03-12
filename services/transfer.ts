@@ -277,6 +277,20 @@ export async function getAgentNotifications(agentId: string, limit: number = 20)
   return data || [];
 }
 
+export async function getAdminNotifications(limit: number = 20) {
+  const adminClient = createAdminClient();
+  
+  const { data, error } = await adminClient
+    .from('notifications')
+    .select('*')
+    .eq('is_admin_notification', true)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
+}
+
 export async function searchTransfers(query: string, agentId?: string) {
   const adminClient = createAdminClient();
   

@@ -167,11 +167,50 @@ export interface DashboardStats {
   todayTransfers: number;
   totalSent: number;
   totalClients: number;
-  // Totales agrupados por moneda (por ejemplo { USD: 1234.56, EUR: 789.00 })
   balancesByCurrency?: Record<string, number>;
+  totalCommission: number;
+  todayCommission: number;
+  commissionPerTransfer: number;
 }
 
 export interface ChartData {
   name: string;
   value: number;
+}
+
+export interface WalletTransfer {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  sender_name: string;
+  sender_phone: string;
+  receiver_name: string;
+  receiver_phone: string;
+  amount: number;
+  currency: string;
+  verification_code: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'expired';
+  created_at: string;
+  confirmed_at?: string;
+  sender?: {
+    name: string;
+    phone?: string;
+  };
+  receiver?: {
+    name: string;
+    phone?: string;
+  };
+}
+
+export interface CreateWalletTransferData {
+  receiver_phone: string;
+  receiver_name: string;
+  amount: number;
+  currency: string;
+  notes?: string;
+}
+
+export interface ConfirmWalletTransferData {
+  transfer_id: string;
+  verification_code: string;
 }
