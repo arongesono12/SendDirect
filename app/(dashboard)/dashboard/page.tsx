@@ -224,7 +224,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* COMISIONES - Different for Admin vs Gestor */}
+        {/* COMISIONES - Only Admin and Gestor */}
+        {user?.role !== 'cliente' && (
         <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-border/50 shadow-sm text-card-foreground">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg md:text-xl font-black">Comisiones</h2>
@@ -276,6 +277,7 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+        )}
 
       {stats?.balancesByCurrency && Object.keys(stats.balancesByCurrency).length > 0 && (
         <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-border/50 shadow-sm text-card-foreground">
@@ -297,14 +299,15 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 4, 5 & 6: Ranking, Tracker & Chat */}
+      {/* 4, 5 & 6: Ranking, Tracker & Chat - Only for Admin and Gestor */}
+      {user?.role !== 'cliente' && (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
 
         {/* ENVÍOS DE GESTORES */}
         <div className="space-y-4 bg-card p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-border/50 shadow-sm text-card-foreground">
           <div className="flex items-center justify-between">
             <h2 className="text-lg md:text-xl font-black">
-              {user?.role === 'admin' ? 'Envíos de Gestores' : 'Actividad Top'}
+              {user?.role === 'admin' ? 'Envíos de Gestores' : user?.role === 'gestor' ? 'Actividad Top' : 'Mi Actividad'}
             </h2>
             <Button
               variant="ghost"
@@ -445,37 +448,9 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+      )}
 
       {/* ─── MODALES / DRAWERS ──────────────────────────────────────── */}
-      <SupportModal 
-        open={supportOpen} 
-        onOpenChange={(open) => { 
-          setSupportOpen(open); 
-          if (!open) setSupportRequestType('general');
-        }} 
-        requestType={supportRequestType} 
-      />
-
-      <FlujoDiaModal
-        open={flujoDiaOpen}
-        onClose={() => setFlujoDiaOpen(false)}
-        stats={stats}
-        preferredCurrency={displayCurrency}
-      />
-
-      <GestoresModal
-        open={gestoresOpen}
-        onClose={() => setGestoresOpen(false)}
-        userRole={user?.role}
-        preferredCurrency={displayCurrency}
-      />
-
-      <VolumenSemanalModal
-        open={volumenOpen}
-        onClose={() => setVolumenOpen(false)}
-        preferredCurrency={displayCurrency}
-      />
-
       <SoporteModal
         open={soporteOpen}
         onClose={() => setSoporteOpen(false)}

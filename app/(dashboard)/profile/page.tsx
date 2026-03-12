@@ -283,9 +283,11 @@ export default function ProfilePage() {
               <CheckCircle className="h-4 w-4" /> Verificada
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-muted/20 dark:bg-slate-900/40 border border-border/5 space-y-1">
+            <div className="p-4 rounded-2xl bg-muted/20 dark:bg-slate-900/40 border border-border/5 space-y-1">
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Nivel de Acceso</p>
-            <p className="text-sm font-black text-foreground uppercase tracking-tighter">Nivel {user?.role === 'admin' ? '3 (Admin)' : '1 (Gestor)'}</p>
+            <p className="text-sm font-black text-foreground uppercase tracking-tighter">
+              {user?.role === 'admin' ? 'Nivel 3 (Administrador)' : user?.role === 'gestor' ? 'Nivel 2 (Gestor)' : 'Nivel 1 (Cliente)'}
+            </p>
           </div>
           <div className="p-4 rounded-2xl bg-muted/20 dark:bg-slate-900/40 border border-border/5 space-y-1">
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Miembro desde</p>

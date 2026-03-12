@@ -33,23 +33,31 @@ export function SupportModal({ open, onOpenChange, requestType = 'general', defa
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
 
+  const isClient = user?.role === 'cliente';
+
   const titleMap = {
     balance_topup: 'Solicitar Recarga de Saldo',
     report_error: 'Reportar Transferencia con Error',
-    general: 'Contactar Administración',
+    general: isClient ? 'Contactar Gestor' : 'Contactar Administración',
   };
 
   const descMap = {
     balance_topup: 'Contacta con un administrador de SendDirect para recargar tu cuenta',
-    report_error: 'Describe el problema con la transferencia para que un administrador pueda ayudarte',
-    general: 'Envía un mensaje al equipo de administración de SendDirect',
+    report_error: isClient 
+      ? 'Reporta el error de tu transferencia al gestor que te envió los fondos' 
+      : 'Describe el problema con la transferencia para que un administrador pueda ayudarte',
+    general: isClient 
+      ? 'Contacta al gestor que te envió una transferencia' 
+      : 'Envía un mensaje al equipo de administración de SendDirect',
   };
 
   // Load admins when modal opens
   useEffect(() => {
     if (!open) return;
     setLoadingAdmins(true);
-    fetch('/api/admins')
+    
+    const endpoint = isClient ? '/api/gestors-for-client' : '/api/admins';
+    fetch(endpoint)
       .then((r) => r.json())
       .then((data: User[]) => {
         setAdmins(data);
@@ -57,7 +65,7 @@ export function SupportModal({ open, onOpenChange, requestType = 'general', defa
       })
       .catch(() => {})
       .finally(() => setLoadingAdmins(false));
-  }, [open]);
+  }, [open, isClient]);
 
   const handleSend = async () => {
     if (!message.trim()) return;
