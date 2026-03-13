@@ -67,8 +67,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    function formatPhoneNumber(phone: string): string {
+      const cleaned = phone.replace(/\D/g, '');
+      if (cleaned.startsWith('237')) {
+        return '+' + cleaned;
+      }
+      if (cleaned.startsWith('6') && cleaned.length === 9) {
+        return '+237' + cleaned;
+      }
+      if (cleaned.startsWith('+')) {
+        return cleaned;
+      }
+      return '+' + cleaned;
+    }
+
     const twilio = await import('twilio');
     const client = twilio.default(accountSid, authToken);
+
+    const formattedSenderPhone = formatPhoneNumber(data.senderPhone);
+    const formattedReceiverPhone = formatPhoneNumber(data.receiverPhone);
+
+    console.log('Sending SMS from:', formattedSenderPhone, 'to:', formattedReceiverPhone);
 
     const senderMessage = `SendDirect: Su transferencia de ${data.amount} ${data.currency} ha sido registrada correctamente.\n\nRemitente: ${data.senderName}\nDestinatario: ${data.receiverName}\nMonto: ${data.amount} ${data.currency}\nCódigo: ${data.transferCode}\n\nGracias por confiar en SendDirect.`;
     
@@ -80,16 +99,18 @@ export async function POST(request: NextRequest) {
     let receiverError = null;
 
     try {
-      const senderResult = await sendSMS(client, data.senderPhone, senderMessage, twilioPhoneNumber);
+      const senderResult = await sendSMS(client, formattedSenderPhone, senderMessage, twilioPhoneNumber);
       senderSid = senderResult.sid;
+      console.log('SMS sent to sender:', senderSid);
     } catch (error: any) {
       senderError = error.message || 'Error sending to sender';
       console.error('Error sending SMS to sender:', senderError);
     }
 
     try {
-      const receiverResult = await sendSMS(client, data.receiverPhone, receiverMessage, twilioPhoneNumber);
+      const receiverResult = await sendSMS(client, formattedReceiverPhone, receiverMessage, twilioPhoneNumber);
       receiverSid = receiverResult.sid;
+      console.log('SMS sent to receiver:', receiverSid);
     } catch (error: any) {
       receiverError = error.message || 'Error sending to receiver';
       console.error('Error sending SMS to receiver:', receiverError);

@@ -28,6 +28,11 @@ export async function getAgentDashboardStats(agentId: string): Promise<Dashboard
     .from('transfers')
     .select('sender_phone')
     .eq('agent_id', agentId);
+  
+  const { data: allAgentTransfers } = await adminClient
+    .from('transfers')
+    .select('status')
+    .eq('agent_id', agentId);
 
   // Build currency-aware balances
   const perCurrency: Record<string, number> = {};
@@ -50,6 +55,10 @@ export async function getAgentDashboardStats(agentId: string): Promise<Dashboard
   const completedCount = allTransfers?.length || 0;
   const commissionPerTransfer = completedCount > 0 ? totalCommission / completedCount : 0;
 
+  const completedTransfers = allAgentTransfers?.filter(t => t.status === 'completed').length || 0;
+  const pendingTransfers = allAgentTransfers?.filter(t => t.status === 'created').length || 0;
+  const cancelledTransfers = allAgentTransfers?.filter(t => t.status === 'cancelled').length || 0;
+
   return {
     totalBalance,
     todayTransfers: todayTransfers?.length || 0,
@@ -59,6 +68,9 @@ export async function getAgentDashboardStats(agentId: string): Promise<Dashboard
     totalCommission,
     todayCommission,
     commissionPerTransfer,
+    completedTransfers,
+    pendingTransfers,
+    cancelledTransfers,
   };
 }
 
@@ -95,6 +107,10 @@ export async function getAdminDashboardStats(): Promise<DashboardStats> {
     .select('id')
     .eq('role', 'cliente');
 
+  const { data: allTransfersStatus } = await adminClient
+    .from('transfers')
+    .select('status');
+
   // Currency-wise aggregation
   const perCurrency: Record<string, number> = {};
   balances?.forEach((b: any) => {
@@ -115,6 +131,10 @@ export async function getAdminDashboardStats(): Promise<DashboardStats> {
   const completedCount = allTransfers?.length || 0;
   const commissionPerTransfer = completedCount > 0 ? totalCommission / completedCount : 0;
 
+  const completedTransfers = allTransfersStatus?.filter(t => t.status === 'completed').length || 0;
+  const pendingTransfers = allTransfersStatus?.filter(t => t.status === 'created').length || 0;
+  const cancelledTransfers = allTransfersStatus?.filter(t => t.status === 'cancelled').length || 0;
+
   return {
     totalBalance,
     todayTransfers: todayTransfers?.length || 0,
@@ -124,6 +144,9 @@ export async function getAdminDashboardStats(): Promise<DashboardStats> {
     totalCommission,
     todayCommission,
     commissionPerTransfer,
+    completedTransfers,
+    pendingTransfers,
+    cancelledTransfers,
   };
 }
 

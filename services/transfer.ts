@@ -2,6 +2,20 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import type { Transfer, TransferFormData, Notification } from '@/types';
 import { generateTransferCode } from '@/lib/utils';
 
+function formatPhoneNumber(phone: string): string {
+  const cleaned = phone.replace(/\D/g, '');
+  if (cleaned.startsWith('237')) {
+    return '+' + cleaned;
+  }
+  if (cleaned.startsWith('6') && cleaned.length === 9) {
+    return '+237' + cleaned;
+  }
+  if (cleaned.startsWith('+')) {
+    return cleaned;
+  }
+  return '+' + cleaned;
+}
+
 async function sendTransferSMS(data: {
   transferId: string;
   transferCode: string;
@@ -15,13 +29,26 @@ async function sendTransferSMS(data: {
   agentName?: string;
 }) {
   try {
+    const formattedData = {
+      ...data,
+      senderPhone: formatPhoneNumber(data.senderPhone),
+      receiverPhone: formatPhoneNumber(data.receiverPhone),
+    };
+    
     const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/sms`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(formattedData),
     });
+    
     const result = await response.json();
     console.log('SMS Result:', result);
+    
+    if (!result.success) {
+      console.error('SMS failed:', result.error);
+      return { success: false, error: result.error };
+    }
+    
     return result;
   } catch (error) {
     console.error('Error sending SMS:', error);
@@ -60,6 +87,8 @@ export async function createTransfer(data: TransferFormData, agentId: string): P
         sender_document_number: data.sender_document_number,
         receiver_name: data.receiver_name,
         receiver_phone: data.receiver_phone,
+        receiver_document_type: data.receiver_document_type,
+        receiver_document_number: data.receiver_document_number,
         destination_city: data.destination_city,
         destination_country: data.destination_country,
         amount: data.amount,
@@ -289,6 +318,113 @@ export async function getAdminNotifications(limit: number = 20) {
 
   if (error) throw error;
   return data || [];
+}
+
+export async function deleteNotification(notificationId: string): Promise<{ success: boolean; error?: string }> {
+  const adminClient = createAdminClient();
+  
+  try {
+    const { error } = await adminClient
+      .from('notifications')
+      .delete()
+      .eq('id', notificationId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    return { success: false, error: 'Error al eliminar la notificación' };
+  }
+}
+
+export async function markNotificationAsRead(notificationId: string): Promise<{ success: boolean; error?: string }> {
+  const adminClient = createAdminClient();
+  
+  try {
+    const { error } = await adminClient
+      .from('notifications')
+      .update({ 
+        is_read: true, 
+        read_at: new Date().toISOString() 
+      })
+      .eq('id', notificationId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    return { success: false, error: 'Error al marcar la notificación como leída' };
+  }
+}
+
+export async function markAllNotificationsAsRead(agentId: string): Promise<{ success: boolean; error?: string }> {
+  const adminClient = createAdminClient();
+  
+  try {
+    const { data: transfers } = await adminClient
+      .from('transfers')
+      .select('id')
+      .eq('agent_id', agentId);
+
+    if (!transfers || transfers.length === 0) {
+      return { success: true };
+    }
+
+    const transferIds = transfers.map(t => t.id);
+    
+    const { error } = await adminClient
+      .from('notifications')
+      .update({ 
+        is_read: true, 
+        read_at: new Date().toISOString() 
+      })
+      .in('transfer_id', transferIds)
+      .eq('is_read', false);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    return { success: false, error: 'Error al marcar todas las notificaciones como leídas' };
+  }
+}
+
+export async function getUnreadNotificationCount(agentId: string): Promise<number> {
+  const adminClient = createAdminClient();
+  
+  try {
+    const { data: transfers } = await adminClient
+      .from('transfers')
+      .select('id')
+      .eq('agent_id', agentId);
+
+    if (!transfers || transfers.length === 0) {
+      return 0;
+    }
+
+    const transferIds = transfers.map(t => t.id);
+    
+    const { count, error } = await adminClient
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .in('transfer_id', transferIds)
+      .eq('is_read', false);
+
+    if (error) throw error;
+    return count || 0;
+  } catch (error) {
+    console.error('Error getting unread notification count:', error);
+    return 0;
+  }
 }
 
 export async function searchTransfers(query: string, agentId?: string) {

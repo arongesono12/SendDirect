@@ -26,10 +26,12 @@ import {
   Wallet,
   QrCode,
   ArrowRightLeft,
+  Send,
 } from 'lucide-react';
 import { SupportModal } from '@/components/layout/support-modal';
 import { WalletTransferModal } from '@/components/wallet-transfer-modal';
 import { VerifyTransferModal } from '@/components/verify-transfer-modal';
+import { AgentTransferModal } from '@/components/agent-transfer-modal';
 
 interface DailyStats {
   date: string;
@@ -50,6 +52,7 @@ export default function TransfersPage() {
   const [supportOpen, setSupportOpen] = useState(false);
   const [walletTransferOpen, setWalletTransferOpen] = useState(false);
   const [verifyTransferOpen, setVerifyTransferOpen] = useState(false);
+  const [agentTransferOpen, setAgentTransferOpen] = useState(false);
   
   const displayCurrency = preferredCurrency || 'XAF';
 
@@ -84,6 +87,24 @@ export default function TransfersPage() {
     }
   }, [user]);
 
+  const refreshData = async () => {
+    try {
+      const [statsData, transfersData, dailyData] = await Promise.all([
+        user?.role === 'admin' 
+          ? Promise.resolve(null) 
+          : getAgentDashboardStats(user?.id || ''),
+        getRecentTransfers(20, user?.role === 'gestor' ? user.id : undefined),
+        user?.role === 'admin' ? getDailyTransferStats(30) : Promise.resolve([]),
+      ]);
+      
+      setStats(statsData);
+      setRecentTransfers(transfersData || []);
+      setDailyStats(dailyData || []);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -110,7 +131,25 @@ export default function TransfersPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className={`grid grid-cols-1 ${user?.role === 'cliente' ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4'} gap-4`}>
+      <div className={`grid grid-cols-1 ${user?.role === 'gestor' ? 'md:grid-cols-2 lg:grid-cols-5' : user?.role === 'cliente' ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4'} gap-4`}>
+        {/* Card: Nueva Transferencia (Solo gestores) */}
+        {user?.role === 'gestor' && (
+          <Card className="bg-brand-gradient border-0 rounded-3xl p-6 cursor-pointer hover:shadow-xl transition-all text-white" onClick={() => setAgentTransferOpen(true)}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Send className="h-4 w-4" /> Nueva Transferencia
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-black">Enviar dinero</p>
+              <p className="text-xs text-white/70 mt-1">A clientes y beneficiarios</p>
+              <Button variant="ghost" className="text-xs font-bold text-white mt-2 p-0 h-auto">
+                Iniciar <ArrowUpRight className="h-3 w-3 ml-1" />
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Card: Transferir a Cliente (Solo clientes) */}
         {user?.role === 'cliente' && (
           <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 rounded-3xl p-6 cursor-pointer hover:shadow-lg transition-all" onClick={() => setWalletTransferOpen(true)}>
@@ -377,6 +416,13 @@ export default function TransfersPage() {
         onSuccess={() => {
           // Refresh data after successful confirmation
         }}
+      />
+
+      {/* Agent Transfer Modal (para gestores) */}
+      <AgentTransferModal 
+        open={agentTransferOpen} 
+        onOpenChange={setAgentTransferOpen}
+        onSuccess={refreshData}
       />
     </div>
   );

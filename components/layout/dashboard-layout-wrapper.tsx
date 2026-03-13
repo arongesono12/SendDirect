@@ -30,23 +30,32 @@ import {
   X,
   BarChart3,
   Settings,
+  Moon,
+  Sun,
+  AlertTriangle,
 } from 'lucide-react';
 import { signOutAction } from '@/app/actions/auth';
 import { SearchModal } from './search-modal';
 import { NotificationModal } from './notification-modal';
 import { SettingsModal } from './settings-modal';
-import { getAgentNotifications, getAdminNotifications } from '@/services/transfer';
+import { SupportModal } from './support-modal';
+import { getAgentNotifications, getAdminNotifications, getUnreadNotificationCount } from '@/services/transfer';
+import { getAgentBalance } from '@/services/agent';
+import { useTheme } from 'next-themes';
 
 export function DashboardLayoutWrapper({ children }: { children: React.ReactNode }) {
   const { user, setUser, theme } = useAppStore();
   const pathname = usePathname();
   const router = useRouter();
+  const { theme: currentTheme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [lowBalance, setLowBalance] = useState(false);
   
   const isDark = theme === 'dark';
 
@@ -66,19 +75,38 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
     async function loadNotificationCount() {
       if (!user?.id) return;
       try {
-        let notifications;
         if (user.role === 'admin') {
-          notifications = await getAdminNotifications();
+          const notifications = await getAdminNotifications();
+          setNotificationCount(notifications.length);
         } else {
-          notifications = await getAgentNotifications(user.id);
+          const count = await getUnreadNotificationCount(user.id);
+          setNotificationCount(count);
         }
-        setNotificationCount(notifications.length);
       } catch (error) {
         console.error('Error loading notification count:', error);
       }
     }
     loadNotificationCount();
     const interval = setInterval(loadNotificationCount, 30000);
+    return () => clearInterval(interval);
+  }, [user?.id, user?.role]);
+
+  useEffect(() => {
+    async function checkLowBalance() {
+      if (!user?.id || user.role !== 'gestor') {
+        setLowBalance(false);
+        return;
+      }
+      try {
+        const balanceData = await getAgentBalance(user.id);
+        const balance = balanceData?.balance || 0;
+        setLowBalance(balance < 25000);
+      } catch (error) {
+        console.error('Error checking balance:', error);
+      }
+    }
+    checkLowBalance();
+    const interval = setInterval(checkLowBalance, 30000);
     return () => clearInterval(interval);
   }, [user?.id, user?.role]);
 
@@ -168,16 +196,10 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
             </nav>
           </div>
 
-          {/* Right side: Menu + Search + Notifications + Theme + Avatar */}
+          {/* Right side: Search + Notifications + Theme (desktop) + Avatar + Menu (mobile) */}
           <div className="flex items-center gap-1 md:gap-4">
-            {/* Mobile Menu Button - Right side */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 hover:bg-pink-100 dark:hover:bg-pink-500/20 rounded-full transition-colors text-foreground/70 hover:text-pink-600 dark:hover:text-pink-400"
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-            <div className="flex items-center gap-1 md:gap-2 text-muted-foreground">
+            {/* Desktop: Search + Notifications + Theme */}
+            <div className="hidden md:flex items-center gap-1 md:gap-2 text-muted-foreground">
               <button 
                 onClick={() => setSearchOpen(true)}
                 className="p-2 hover:bg-pink-100 dark:hover:bg-pink-500/20 rounded-full transition-colors text-foreground/70 hover:text-pink-600 dark:hover:text-pink-400"
@@ -197,9 +219,15 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
               </button>
               <ThemeToggle />
             </div>
-            </div>
 
-            <div className="flex items-center gap-3 pl-2 md:pl-6 border-l border-border/50">
+            <div className="flex items-center gap-2 md:gap-3 pl-2 md:pl-6 border-l border-border/50">
+              {/* Mobile: Menu Button */}
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden p-2 hover:bg-pink-100 dark:hover:bg-pink-500/20 rounded-full transition-colors text-foreground/70 hover:text-pink-600 dark:hover:text-pink-400"
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
               <div className="text-right hidden md:block">
                 <p className="text-sm font-black text-foreground leading-tight">{user?.name || 'Usuario'}</p>
                 <p className="text-[10px] font-bold text-muted-foreground capitalize">
@@ -224,7 +252,47 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
                       </p>
                     </div>
                   </DropdownMenuLabel>
+                  {/* Alerta de saldo bajo para gestores */}
+                  {user?.role === 'gestor' && lowBalance && (
+                    <DropdownMenuItem 
+                      className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 cursor-pointer"
+                      onClick={() => setSupportOpen(true)}
+                    >
+                      <AlertTriangle className="mr-2 h-4 w-4 text-amber-500" />
+                      <span className="text-amber-600 dark:text-amber-400 font-bold text-xs">
+                        ⚠️ Saldo bajo - Contacte administrador
+                      </span>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
+                  {/* Mobile only options */}
+                  <DropdownMenuItem onClick={() => setSearchOpen(true)} className="md:hidden">
+                    <Search className="mr-2 h-4 w-4" />
+                    <span>Buscar</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setNotificationsOpen(true)} className="md:hidden">
+                    <Bell className="mr-2 h-4 w-4" />
+                    <span>Notificaciones</span>
+                    {notificationCount > 0 && (
+                      <span className="ml-auto bg-rose-500 text-white text-[10px] font-bold rounded-full px-1.5">
+                        {notificationCount > 99 ? '99+' : notificationCount}
+                      </span>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')} className="md:hidden">
+                    {currentTheme === 'dark' ? (
+                      <>
+                        <Sun className="mr-2 h-4 w-4" />
+                        <span>Modo Claro</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="mr-2 h-4 w-4" />
+                        <span>Modo Oscuro</span>
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="md:hidden" />
                   <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Configuración</span>
@@ -240,6 +308,7 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            </div>
             </div>
           </header>
 
@@ -288,6 +357,7 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
         <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
         <NotificationModal open={notificationsOpen} onOpenChange={setNotificationsOpen} />
         <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+        <SupportModal open={supportOpen} onOpenChange={setSupportOpen} requestType="balance_topup" />
       </div>
     </div>
   );

@@ -100,6 +100,8 @@ export interface Notification {
   error_message?: string;
   created_at: string;
   sent_at?: string;
+  is_read?: boolean;
+  read_at?: string;
 }
 
 export interface AgentWithBalance extends User {
@@ -128,6 +130,8 @@ export interface TransferFormData {
   sender_document_number?: string;
   receiver_name: string;
   receiver_phone: string;
+  receiver_document_type?: string;
+  receiver_document_number?: string;
   destination_city: string;
   destination_country?: string;
   amount: number;
@@ -171,6 +175,9 @@ export interface DashboardStats {
   totalCommission: number;
   todayCommission: number;
   commissionPerTransfer: number;
+  completedTransfers: number;
+  pendingTransfers: number;
+  cancelledTransfers: number;
 }
 
 export interface ChartData {

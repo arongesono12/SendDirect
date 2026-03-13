@@ -8,20 +8,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { getAgentBalance, getAgentTransactions, topUpAgentBalance, getAgents } from '@/services/agent';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { AgentBalance, BalanceTransaction, AgentWithBalance } from '@/types';
-import { Wallet, TrendingUp, ArrowUpDown, CheckCircle, AlertCircle, History, CreditCard, ArrowUpRight } from 'lucide-react';
+import { Wallet, TrendingUp, ArrowUpDown, CheckCircle, AlertCircle, History, CreditCard, ArrowUpRight, Loader2 } from 'lucide-react';
 
 export default function BalancePage() {
   const { user } = useAppStore();
+  const [selectedAgent, setSelectedAgent] = useState<AgentWithBalance | null>(null);
+  const [topUpAmount, setTopUpAmount] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [topUpLoading, setTopUpLoading] = useState(false);
   const [balance, setBalance] = useState<AgentBalance | null>(null);
   const [transactions, setTransactions] = useState<BalanceTransaction[]>([]);
   const [agents, setAgents] = useState<AgentWithBalance[]>([]);
   const [loading, setLoading] = useState(true);
-  const [topUpAmount, setTopUpAmount] = useState('');
-  const [topUpLoading, setTopUpLoading] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successAmount, setSuccessAmount] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
@@ -106,6 +108,7 @@ export default function BalancePage() {
                     <TableHead className="py-5 font-black text-muted-foreground text-xs uppercase tracking-wider">Contacto</TableHead>
                     <TableHead className="py-5 font-black text-muted-foreground text-xs uppercase tracking-wider">Estado</TableHead>
                     <TableHead className="py-5 font-black text-muted-foreground text-xs uppercase tracking-wider text-right pr-8">Saldo Disponible</TableHead>
+                    <TableHead className="py-5 font-black text-muted-foreground text-xs uppercase tracking-wider text-right pr-8">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -126,6 +129,20 @@ export default function BalancePage() {
                           {formatCurrency(agent.balance)}
                         </span>
                       </TableCell>
+                      <TableCell className="text-right pr-8">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs"
+                          onClick={() => {
+                            setSelectedAgent(agent);
+                            setTopUpAmount('');
+                            setConfirmOpen(true);
+                          }}
+                        >
+                          Recargar
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -137,18 +154,24 @@ export default function BalancePage() {
     );
   }
 
+  const isGestor = user?.role === 'gestor';
+
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-black tracking-tight text-foreground">Mi Billetera</h1>
-        <p className="text-muted-foreground font-bold text-sm">Gestiona tu liquidez y revisa el historial de movimientos de tu cuenta.</p>
+        <p className="text-muted-foreground font-bold text-sm">
+          {isGestor ? 'Gestiona tu liquidez y revisa el historial de movimientos de tu cuenta.' : 'Gestiona tu saldo y revisa el historial de movimientos de tu cuenta.'}
+        </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className={`grid gap-6 ${isGestor ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
         {[
           { label: 'Saldo Disponible', value: formatCurrency(balance?.balance || 0), icon: Wallet, color: 'bg-primary', bg: 'bg-card/40' },
-          { label: 'Total Recargado', value: formatCurrency(transactions.filter(t => t.type === 'topup').reduce((s, t) => s + t.amount, 0)), icon: TrendingUp, color: 'bg-task-blue-fg', bg: 'bg-task-blue-bg' },
-          { label: 'Total Operado', value: formatCurrency(Math.abs(transactions.filter(t => t.type === 'transfer').reduce((s, t) => s + t.amount, 0))), icon: ArrowUpDown, color: 'bg-task-purple-fg', bg: 'bg-task-purple-bg' }
+          ...(isGestor ? [
+            { label: 'Total Recargado', value: formatCurrency(transactions.filter(t => t.type === 'topup').reduce((s, t) => s + t.amount, 0)), icon: TrendingUp, color: 'bg-task-blue-fg', bg: 'bg-task-blue-bg' },
+            { label: 'Total Operado', value: formatCurrency(Math.abs(transactions.filter(t => t.type === 'transfer').reduce((s, t) => s + t.amount, 0))), icon: ArrowUpDown, color: 'bg-task-purple-fg', bg: 'bg-task-purple-bg' }
+          ] : [])
         ].map((item, i) => (
           <Card key={i} className={`glass-premium relative ${item.bg}/40`}>
             <CardContent className="p-6 space-y-4">
@@ -164,7 +187,8 @@ export default function BalancePage() {
         ))}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className={`grid gap-8 ${isGestor ? 'lg:grid-cols-3' : 'lg:grid-cols-1'}`}>
+        {isGestor && (
         <Card className="lg:col-span-1 glass-premium relative">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
@@ -207,6 +231,7 @@ export default function BalancePage() {
             )}
           </CardContent>
         </Card>
+        )}
 
         <Card className="lg:col-span-2 glass-premium relative">
           <CardHeader className="border-b border-border/5 pb-6">
@@ -286,6 +311,87 @@ export default function BalancePage() {
               Estupendo
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-md bg-card/90 glass-premium border-border/20 rounded-4xl p-8 outline-none">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-foreground">
+              Recargar Saldo a Gestor
+            </DialogTitle>
+            <DialogDescription className="text-sm font-bold text-muted-foreground">
+              Ingresa el monto que deseas añadir al saldo de {selectedAgent?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="agent-topup" className="text-[10px] font-black text-muted-foreground uppercase tracking-wider ml-1">Monto a Recargar</Label>
+              <div className="relative">
+                <Input
+                  id="agent-topup"
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={topUpAmount}
+                  onChange={(e) => setTopUpAmount(e.target.value)}
+                  className="h-14 px-6 focus:ring-2 focus:ring-primary/20 transition-all font-black text-xl"
+                />
+              </div>
+            </div>
+            {selectedAgent && (
+              <div className="p-4 rounded-xl bg-muted/30 border border-border/20">
+                <p className="text-xs font-bold text-muted-foreground uppercase">Saldo actual del gestor</p>
+                <p className="text-xl font-black text-foreground">{formatCurrency(selectedAgent.balance)}</p>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="flex gap-3 sm:justify-end pt-4">
+            <Button
+              variant="outline"
+              className="h-12 rounded-xl font-bold"
+              onClick={() => setConfirmOpen(false)}
+              disabled={topUpLoading}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="h-12 bg-primary text-white rounded-xl font-bold shadow-lg"
+              onClick={async () => {
+                if (!topUpAmount || parseFloat(topUpAmount) <= 0 || !selectedAgent) return;
+                setTopUpLoading(true);
+                try {
+                  const result = await topUpAgentBalance(selectedAgent.id, parseFloat(topUpAmount));
+                  if (result.success) {
+                    const agentsData = await getAgents();
+                    setAgents(agentsData);
+                    setSuccessAmount(parseFloat(topUpAmount));
+                    setSuccessOpen(true);
+                    setConfirmOpen(false);
+                    setTopUpAmount('');
+                  } else {
+                    setErrorMessage(result.error || 'Error al recargar el saldo');
+                  }
+                } catch (error) {
+                  console.error('Error topping up:', error);
+                  setErrorMessage('Error al conectar con el servidor');
+                } finally {
+                  setTopUpLoading(false);
+                }
+              }}
+              disabled={!topUpAmount || parseFloat(topUpAmount) <= 0 || topUpLoading}
+            >
+              {topUpLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Procesando...
+                </>
+              ) : (
+                'Confirmar Recarga'
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
