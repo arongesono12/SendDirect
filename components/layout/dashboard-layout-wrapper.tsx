@@ -39,7 +39,7 @@ import { SearchModal } from './search-modal';
 import { NotificationModal } from './notification-modal';
 import { SettingsModal } from './settings-modal';
 import { SupportModal } from './support-modal';
-import { getAgentNotifications, getAdminNotifications, getUnreadNotificationCount } from '@/services/transfer';
+import { getAgentNotifications, getAdminNotifications, getUnreadNotificationCount, getClientUnreadNotificationCount } from '@/services/transfer';
 import { getAgentBalance } from '@/services/agent';
 import { useTheme } from 'next-themes';
 
@@ -78,8 +78,11 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
         if (user.role === 'admin') {
           const notifications = await getAdminNotifications();
           setNotificationCount(notifications.length);
-        } else {
+        } else if (user.role === 'gestor') {
           const count = await getUnreadNotificationCount(user.id);
+          setNotificationCount(count);
+        } else if (user.role === 'cliente') {
+          const count = await getClientUnreadNotificationCount(user.id);
           setNotificationCount(count);
         }
       } catch (error) {

@@ -322,6 +322,33 @@ export function AgentTransferModal({ open, onOpenChange, onSuccess }: AgentTrans
                         required
                       />
                     </div>
+                    <div>
+                      <Label htmlFor="sender_document_type" className="text-xs font-bold text-muted-foreground">Tipo de Documento</Label>
+                      <select
+                        id="sender_document_type"
+                        name="sender_document_type"
+                        value={formData.sender_document_type}
+                        onChange={handleChange}
+                        className="w-full h-10 mt-1 px-3 rounded-xl border border-input bg-background text-sm focus:ring-2 focus:ring-primary/20"
+                        required
+                      >
+                        {DOCUMENT_TYPES.map((doc) => (
+                          <option key={doc.value} value={doc.value}>{doc.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="sender_document_number" className="text-xs font-bold text-muted-foreground">N° Documento</Label>
+                      <Input
+                        id="sender_document_number"
+                        name="sender_document_number"
+                        value={formData.sender_document_number}
+                        onChange={handleChange}
+                        placeholder="Número de documento"
+                        className="h-10 rounded-xl mt-1"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
 

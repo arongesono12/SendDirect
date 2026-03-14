@@ -151,6 +151,37 @@ export async function createTransfer(data: TransferFormData, agentId: string): P
       console.error('Error sending SMS:', smsError);
     }
 
+    try {
+      const formattedReceiverPhone = formatPhoneNumber(data.receiver_phone);
+      
+      const { data: clientUser, error: clientError } = await adminClient
+        .from('users')
+        .select('id, name, phone')
+        .eq('role', 'cliente')
+        .or(`phone.eq.${formattedReceiverPhone},phone.eq.+${formattedReceiverPhone.replace('+', '')}`)
+        .single();
+
+      if (!clientError && clientUser) {
+        const notificationMessage = `Tienes una transferencia disponible de ${data.amount} ${data.currency} de ${data.sender_name}. Código: ${transferCode}. Ciudad: ${data.destination_city || 'N/A'}`;
+        
+        await adminClient
+          .from('notifications')
+          .insert({
+            user_id: clientUser.id,
+            transfer_id: transfer.id,
+            phone: data.receiver_phone,
+            message: notificationMessage,
+            status: 'pending',
+            is_admin_notification: false,
+            priority: 'high',
+          });
+        
+        console.log(`Notification created for client ${clientUser.name} (${clientUser.phone})`);
+      }
+    } catch (notificationError) {
+      console.error('Error creating client notification:', notificationError);
+    }
+
     return { success: true, transfer };
   } catch (error) {
     console.error('Transfer error:', error);
@@ -445,4 +476,72 @@ export async function searchTransfers(query: string, agentId?: string) {
 
   if (error) throw error;
   return data || [];
+}
+
+export async function getClientNotifications(clientId: string, limit: number = 20) {
+  const adminClient = createAdminClient();
+  
+  const { data, error } = await adminClient
+    .from('notifications')
+    .select(`
+      *,
+      transfer:transfers!notifications_transfer_id_fkey (
+        transfer_code,
+        sender_name,
+        receiver_name,
+        receiver_phone,
+        amount,
+        currency,
+        destination_city,
+        created_at
+      )
+    `)
+    .eq('user_id', clientId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getClientUnreadNotificationCount(clientId: string): Promise<number> {
+  const adminClient = createAdminClient();
+  
+  try {
+    const { count, error } = await adminClient
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', clientId)
+      .eq('is_read', false);
+
+    if (error) throw error;
+    return count || 0;
+  } catch (error) {
+    console.error('Error getting client unread notification count:', error);
+    return 0;
+  }
+}
+
+export async function markAllClientNotificationsAsRead(clientId: string): Promise<{ success: boolean; error?: string }> {
+  const adminClient = createAdminClient();
+  
+  try {
+    const { error } = await adminClient
+      .from('notifications')
+      .update({ 
+        is_read: true, 
+        read_at: new Date().toISOString() 
+      })
+      .eq('user_id', clientId)
+      .eq('is_read', false);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error marking all client notifications as read:', error);
+    return { success: false, error: 'Error al marcar todas las notificaciones como leídas' };
+  }
 }

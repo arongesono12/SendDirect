@@ -92,6 +92,7 @@ export interface ActivityLog {
 
 export interface Notification {
   id: string;
+  user_id?: string;
   transfer_id?: string;
   phone: string;
   message: string;
@@ -102,6 +103,8 @@ export interface Notification {
   sent_at?: string;
   is_read?: boolean;
   read_at?: string;
+  is_admin_notification?: boolean;
+  priority?: 'normal' | 'high';
 }
 
 export interface AgentWithBalance extends User {

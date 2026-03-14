@@ -18,7 +18,7 @@ import {
   MailOpen,
   X,
 } from 'lucide-react';
-import { getAgentNotifications, deleteNotification, markNotificationAsRead, markAllNotificationsAsRead } from '@/services/transfer';
+import { getAgentNotifications, deleteNotification, markNotificationAsRead, markAllNotificationsAsRead, getClientNotifications, markAllClientNotificationsAsRead } from '@/services/transfer';
 import { useAppStore } from '@/lib/store';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -49,17 +49,19 @@ export function NotificationModal({ open, onOpenChange }: NotificationModalProps
     if (!user?.id) return;
     setLoading(true);
     try {
-      const data = await getAgentNotifications(user.id);
-      const withTransfer = data.filter((n): n is NotificationWithTransfer => 
-        Boolean((n as unknown as NotificationWithTransfer).transfer)
-      );
-      setNotifications(withTransfer);
+      let data;
+      if (user.role === 'cliente') {
+        data = await getClientNotifications(user.id);
+      } else {
+        data = await getAgentNotifications(user.id);
+      }
+      setNotifications(data as NotificationWithTransfer[]);
     } catch (error) {
       console.error('Error loading notifications:', error);
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   useEffect(() => {
     if (open && user?.id) {
@@ -98,7 +100,12 @@ export function NotificationModal({ open, onOpenChange }: NotificationModalProps
 
   const handleMarkAllAsRead = async () => {
     if (!user?.id) return;
-    const result = await markAllNotificationsAsRead(user.id);
+    let result;
+    if (user.role === 'cliente') {
+      result = await markAllClientNotificationsAsRead(user.id);
+    } else {
+      result = await markAllNotificationsAsRead(user.id);
+    }
     if (result.success) {
       setNotifications(prev => prev.map(n => ({ 
         ...n, 
@@ -277,10 +284,10 @@ export function NotificationModal({ open, onOpenChange }: NotificationModalProps
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {selectedNotification.status === 'sent' && selectedNotification.sent_at 
-                      ? `Enviado el ${format(new Date(selectedNotification.sent_at), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}`
-                      : selectedNotification.status === 'failed' && selectedNotification.error_message
-                      ? selectedNotification.error_message
-                      : 'Esperando procesamiento...'}
+                        ? `Enviado el ${format(new Date(selectedNotification.sent_at), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}`
+                        : selectedNotification.status === 'failed' && selectedNotification.error_message
+                        ? selectedNotification.error_message
+                        : 'Esperando procesamiento...'}
                   </p>
                 </div>
               </div>

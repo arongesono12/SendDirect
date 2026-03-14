@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     let query = adminClient
       .from('notifications')
       .select('*')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(50);
 

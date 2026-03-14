@@ -12,13 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { getAgentBalance, getAgentTransactions, topUpAgentBalance, getAgents } from '@/services/agent';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { AgentBalance, BalanceTransaction, AgentWithBalance } from '@/types';
-import { Wallet, TrendingUp, ArrowUpDown, CheckCircle, AlertCircle, History, CreditCard, ArrowUpRight, Loader2 } from 'lucide-react';
+import { Wallet, TrendingUp, ArrowUpDown, CheckCircle, AlertCircle, History, Loader2 } from 'lucide-react';
 
 export default function BalancePage() {
   const { user } = useAppStore();
   const [selectedAgent, setSelectedAgent] = useState<AgentWithBalance | null>(null);
   const [topUpAmount, setTopUpAmount] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [finalConfirmOpen, setFinalConfirmOpen] = useState(false);
   const [topUpLoading, setTopUpLoading] = useState(false);
   const [balance, setBalance] = useState<AgentBalance | null>(null);
   const [transactions, setTransactions] = useState<BalanceTransaction[]>([]);
@@ -187,53 +188,8 @@ export default function BalancePage() {
         ))}
       </div>
 
-      <div className={`grid gap-8 ${isGestor ? 'lg:grid-cols-3' : 'lg:grid-cols-1'}`}>
-        {isGestor && (
-        <Card className="lg:col-span-1 glass-premium relative">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
-              <CreditCard className="h-5 w-5" /> Recargar Saldo
-            </CardTitle>
-            <CardDescription className="font-bold text-xs uppercase tracking-tight">Ingresa el monto a añadir a tu cuenta</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-2">
-            <div className="space-y-2">
-              <Label htmlFor="topup" className="text-[10px] font-black text-muted-foreground uppercase tracking-wider ml-1">Monto a Recargar</Label>
-              <div className="relative">
-                 <Input
-                  id="topup"
-                  type="number"
-                  min="1"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={topUpAmount}
-                  onChange={(e) => setTopUpAmount(e.target.value)}
-                  className="h-14 px-6 focus:ring-2 focus:ring-primary/20 transition-all font-black text-xl"
-                />
-              </div>
-            </div>
-            
-            <Button 
-              onClick={handleTopUp} 
-              disabled={!topUpAmount || parseFloat(topUpAmount) <= 0 || topUpLoading}
-              className="w-full h-14 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all"
-            >
-              {topUpLoading ? 'Procesando...' : (
-                <span className="flex items-center gap-2"><ArrowUpRight className="h-5 w-5" /> Confirmar Recarga</span>
-              )}
-            </Button>
-            
-            {errorMessage && (
-              <div className="flex items-center gap-2 p-4 text-xs font-bold text-red-600 bg-red-50 rounded-2xl border border-red-100">
-                <AlertCircle className="h-4 w-4" />
-                {errorMessage}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        )}
-
-        <Card className="lg:col-span-2 glass-premium relative">
+      <div className="grid gap-8 lg:grid-cols-1">
+        <Card className="glass-premium relative">
           <CardHeader className="border-b border-border/5 pb-6">
             <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
               <History className="h-5 w-5" /> Movimientos de Cuenta
@@ -358,6 +314,62 @@ export default function BalancePage() {
             </Button>
             <Button
               className="h-12 bg-primary text-white rounded-xl font-bold shadow-lg"
+              onClick={() => {
+                if (!topUpAmount || parseFloat(topUpAmount) <= 0 || !selectedAgent) return;
+                setConfirmOpen(false);
+                setFinalConfirmOpen(true);
+              }}
+              disabled={!topUpAmount || parseFloat(topUpAmount) <= 0 || topUpLoading}
+            >
+              Continuar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={finalConfirmOpen} onOpenChange={setFinalConfirmOpen}>
+        <DialogContent className="max-w-md bg-card/90 glass-premium border-border/20 rounded-4xl p-8 outline-none">
+          <DialogHeader className="text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
+              <AlertCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            </div>
+            <DialogTitle className="text-xl font-black text-foreground text-center">
+              Confirmar Recarga de Saldo
+            </DialogTitle>
+            <DialogDescription className="text-sm font-bold text-muted-foreground text-center">
+              ¿Estás seguro de que deseas continuar?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 text-center">
+              <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Gestor</p>
+              <p className="text-lg font-black text-foreground">{selectedAgent?.name}</p>
+              <p className="text-xs text-muted-foreground">{selectedAgent?.phone}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-center">
+              <p className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-1">Monto a Recargar</p>
+              <p className="text-3xl font-black text-green-600 dark:text-green-400">{formatCurrency(parseFloat(topUpAmount) || 0)}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+              <p className="text-xs font-bold text-amber-700 dark:text-amber-400 text-center">
+                Esta acción no se puede deshacer. El saldo será añadido inmediatamente a la cuenta del gestor.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="flex gap-3 sm:justify-end pt-4">
+            <Button
+              variant="outline"
+              className="h-12 rounded-xl font-bold"
+              onClick={() => {
+                setFinalConfirmOpen(false);
+                setConfirmOpen(true);
+              }}
+              disabled={topUpLoading}
+            >
+              Volver
+            </Button>
+            <Button
+              className="h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-lg"
               onClick={async () => {
                 if (!topUpAmount || parseFloat(topUpAmount) <= 0 || !selectedAgent) return;
                 setTopUpLoading(true);
@@ -368,7 +380,7 @@ export default function BalancePage() {
                     setAgents(agentsData);
                     setSuccessAmount(parseFloat(topUpAmount));
                     setSuccessOpen(true);
-                    setConfirmOpen(false);
+                    setFinalConfirmOpen(false);
                     setTopUpAmount('');
                   } else {
                     setErrorMessage(result.error || 'Error al recargar el saldo');
@@ -388,7 +400,7 @@ export default function BalancePage() {
                   Procesando...
                 </>
               ) : (
-                'Confirmar Recarga'
+                'Confirmar y Recargar'
               )}
             </Button>
           </DialogFooter>

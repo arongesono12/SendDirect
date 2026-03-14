@@ -1,0 +1,278 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SendDirect API",
+    "description": "API de Billetera Digital para aplicaciones externas. Autentica usando API Key y API Secret en los headers.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Soporte SendDirect",
+      "email": "soporte@senddirect.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://tu-dominio.com/api/external",
+      "description": "Servidor de producción"
+    },
+    {
+      "url": "http://localhost:3000/api/external",
+      "description": "Servidor de desarrollo"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      },
+      "ApiSecretAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-secret"
+      }
+    },
+    "schemas": {
+      "Balance": {
+        "type": "object",
+        "properties": {
+          "role": { "type": "string" },
+          "balance": { "type": "number" },
+          "currency": { "type": "string" },
+          "formatted": { "type": "string" }
+        }
+      },
+      "Transfer": {
+        "type": "object",
+        "required": ["receiver_name", "receiver_phone", "amount", "destination_city"],
+        "properties": {
+          "sender_name": { "type": "string" },
+          "sender_phone": { "type": "string" },
+          "sender_document_type": { "type": "string" },
+          "sender_document_number": { "type": "string" },
+          "receiver_name": { "type": "string" },
+          "receiver_phone": { "type": "string" },
+          "receiver_document_type": { "type": "string" },
+          "receiver_document_number": { "type": "string" },
+          "destination_city": { "type": "string" },
+          "destination_country": { "type": "string" },
+          "amount": { "type": "number" },
+          "currency": { "type": "string", "default": "XAF" },
+          "notes": { "type": "string" }
+        }
+      },
+      "TransferResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "transfer_id": { "type": "string" },
+              "transfer_code": { "type": "string" },
+              "amount": { "type": "number" },
+              "currency": { "type": "string" },
+              "receiver_name": { "type": "string" },
+              "receiver_phone": { "type": "string" },
+              "destination_city": { "type": "string" },
+              "status": { "type": "string" },
+              "created_at": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/balance": {
+      "get": {
+        "summary": "Obtener saldo",
+        "description": "Devuelve el saldo actual de la billetera según el rol de la API key",
+        "security": [
+          { "ApiKeyAuth": [] },
+          { "ApiSecretAuth": [] }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saldo obtenido exitosamente",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Balance" }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticación fallida",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso denegado"
+          }
+        }
+      }
+    },
+    "/transfer": {
+      "post": {
+        "summary": "Crear transferencia",
+        "description": "Crea una nueva transferencia de dinero. Solo disponible para API keys con rol de gestor.",
+        "security": [
+          { "ApiKeyAuth": [] },
+          { "ApiSecretAuth": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Transfer" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transferencia creada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TransferResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Error de validación o saldo insuficiente"
+          },
+          "401": {
+            "description": "Autenticación fallida"
+          },
+          "403": {
+            "description": "Permiso denegado - Solo gestores"
+          }
+        }
+      }
+    },
+    "/wallet-transfer": {
+      "post": {
+        "summary": "Transferencia entre clientes (Billetera)",
+        "description": "Transfiere dinero de una billetera de cliente a otra. Solo disponible para API keys con rol de cliente. No requiere verificación por código.",
+        "security": [
+          { "ApiKeyAuth": [] },
+          { "ApiSecretAuth": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["receiver_phone", "receiver_name", "amount"],
+                "properties": {
+                  "receiver_phone": { "type": "string", "description": "Teléfono del receptor" },
+                  "receiver_name": { "type": "string", "description": "Nombre del receptor" },
+                  "amount": { "type": "number", "description": "Monto a transferir" },
+                  "currency": { "type": "string", "default": "XAF", "description": "Moneda" },
+                  "notes": { "type": "string", "description": "Notas opcionales" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transferencia exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transfer_id": { "type": "string" },
+                        "transfer_type": { "type": "string" },
+                        "amount": { "type": "number" },
+                        "currency": { "type": "string" },
+                        "sender_name": { "type": "string" },
+                        "receiver_name": { "type": "string" },
+                        "receiver_phone": { "type": "string" },
+                        "status": { "type": "string" },
+                        "new_balance": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error de validación o saldo insuficiente"
+          },
+          "401": {
+            "description": "Autenticación fallida"
+          },
+          "403": {
+            "description": "Permiso denegado - Solo clientes"
+          }
+        }
+      }
+    },
+    "/history": {
+      "get": {
+        "summary": "Obtener historial",
+        "description": "Devuelve el historial de transferencias",
+        "security": [
+          { "ApiKeyAuth": [] },
+          { "ApiSecretAuth": [] }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 50 },
+            "description": "Número de resultados"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 },
+            "description": "Offset de paginación"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial obtenido exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "type": "array" },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "limit": { "type": "integer" },
+                        "offset": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticación fallida"
+          }
+        }
+      }
+    }
+  }
+}
